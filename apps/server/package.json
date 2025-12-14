@@ -10,12 +10,14 @@
     "start": "bun run dist/index.js"
   },
   "dependencies": {
-    "hono": "^4.8.2",
+    "@hono/zod-validator": "^0.7.5",
+    "@openrouter/sdk": "^0.2.11",
+    "@testing-server/auth": "workspace:*",
+    "@testing-server/db": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
-    "zod": "catalog:",
-    "@testing-server/auth": "workspace:*",
-    "@testing-server/db": "workspace:*"
+    "hono": "^4.8.2",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",

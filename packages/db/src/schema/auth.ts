@@ -76,6 +76,11 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
 	sessions: many(session),
 	accounts: many(account),
+	preferences: many(() => import('./user-goals-and-preferences').userGoalsAndPreferences),
+	plans: many(() => import('./monthly-plans').monthlyPlans),
+	quota: many(() => import('./generation-quota').generationQuota),
+	history: many(() => import('./user-activity-history').userActivityHistory),
+	insights: many(() => import('./user-productivity-insights').userProductivityInsights),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
