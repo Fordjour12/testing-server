@@ -58,7 +58,7 @@ planRouter.post('/inputs', zValidator('json', createPlanInputSchema), async (c) 
     // This is the proper architecture: public API → internal service
     try {
       // Make internal HTTP call to /service/generate
-      const baseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = process.env.API_BASE_URL ;
       const response = await fetch(`${baseUrl}/service/generate`, {
         method: 'POST',
         headers: {

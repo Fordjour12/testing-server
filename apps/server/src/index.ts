@@ -3,7 +3,7 @@ import { auth } from "@testing-server/auth";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { planRouter, servicesRouter, streamingRouter } from "./router";
+import { planRouter, servicesRouter, streamingRouter, mockRouter } from "./router";
 
 const app = new Hono();
 
@@ -24,6 +24,7 @@ app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 app.route("/api/plan", planRouter);
 app.route("/service", servicesRouter);
 app.route("/api/streaming", streamingRouter);
+app.route("/api/mock", mockRouter);
 
 app.get("/", (c) => {
 	return c.text("OK");

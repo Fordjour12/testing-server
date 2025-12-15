@@ -9,8 +9,68 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TestMockRouteImport } from './routes/test-mock'
+import { Route as TestRouteImport } from './routes/test'
+import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as PlanRouteImport } from './routes/plan'
+import { Route as HelloRouteImport } from './routes/hello'
+import { Route as GenerateServerFnRouteImport } from './routes/generate-server-fn'
+import { Route as GenerateFetchRouteImport } from './routes/generate-fetch'
+import { Route as GenerateEnvAwareRouteImport } from './routes/generate-env-aware'
+import { Route as GenerateRouteImport } from './routes/generate'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TestMockRoute = TestMockRouteImport.update({
+  id: '/test-mock',
+  path: '/test-mock',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TestRoute = TestRouteImport.update({
+  id: '/test',
+  path: '/test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksRoute = TasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanRoute = PlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HelloRoute = HelloRouteImport.update({
+  id: '/hello',
+  path: '/hello',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenerateServerFnRoute = GenerateServerFnRouteImport.update({
+  id: '/generate-server-fn',
+  path: '/generate-server-fn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenerateFetchRoute = GenerateFetchRouteImport.update({
+  id: '/generate-fetch',
+  path: '/generate-fetch',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenerateEnvAwareRoute = GenerateEnvAwareRouteImport.update({
+  id: '/generate-env-aware',
+  path: '/generate-env-aware',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenerateRoute = GenerateRouteImport.update({
+  id: '/generate',
+  path: '/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +79,172 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
+  '/generate': typeof GenerateRoute
+  '/generate-env-aware': typeof GenerateEnvAwareRoute
+  '/generate-fetch': typeof GenerateFetchRoute
+  '/generate-server-fn': typeof GenerateServerFnRoute
+  '/hello': typeof HelloRoute
+  '/plan': typeof PlanRoute
+  '/tasks': typeof TasksRoute
+  '/test': typeof TestRoute
+  '/test-mock': typeof TestMockRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
+  '/generate': typeof GenerateRoute
+  '/generate-env-aware': typeof GenerateEnvAwareRoute
+  '/generate-fetch': typeof GenerateFetchRoute
+  '/generate-server-fn': typeof GenerateServerFnRoute
+  '/hello': typeof HelloRoute
+  '/plan': typeof PlanRoute
+  '/tasks': typeof TasksRoute
+  '/test': typeof TestRoute
+  '/test-mock': typeof TestMockRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
+  '/generate': typeof GenerateRoute
+  '/generate-env-aware': typeof GenerateEnvAwareRoute
+  '/generate-fetch': typeof GenerateFetchRoute
+  '/generate-server-fn': typeof GenerateServerFnRoute
+  '/hello': typeof HelloRoute
+  '/plan': typeof PlanRoute
+  '/tasks': typeof TasksRoute
+  '/test': typeof TestRoute
+  '/test-mock': typeof TestMockRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/calendar'
+    | '/generate'
+    | '/generate-env-aware'
+    | '/generate-fetch'
+    | '/generate-server-fn'
+    | '/hello'
+    | '/plan'
+    | '/tasks'
+    | '/test'
+    | '/test-mock'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/calendar'
+    | '/generate'
+    | '/generate-env-aware'
+    | '/generate-fetch'
+    | '/generate-server-fn'
+    | '/hello'
+    | '/plan'
+    | '/tasks'
+    | '/test'
+    | '/test-mock'
+  id:
+    | '__root__'
+    | '/'
+    | '/calendar'
+    | '/generate'
+    | '/generate-env-aware'
+    | '/generate-fetch'
+    | '/generate-server-fn'
+    | '/hello'
+    | '/plan'
+    | '/tasks'
+    | '/test'
+    | '/test-mock'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalendarRoute: typeof CalendarRoute
+  GenerateRoute: typeof GenerateRoute
+  GenerateEnvAwareRoute: typeof GenerateEnvAwareRoute
+  GenerateFetchRoute: typeof GenerateFetchRoute
+  GenerateServerFnRoute: typeof GenerateServerFnRoute
+  HelloRoute: typeof HelloRoute
+  PlanRoute: typeof PlanRoute
+  TasksRoute: typeof TasksRoute
+  TestRoute: typeof TestRoute
+  TestMockRoute: typeof TestMockRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/test-mock': {
+      id: '/test-mock'
+      path: '/test-mock'
+      fullPath: '/test-mock'
+      preLoaderRoute: typeof TestMockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/test': {
+      id: '/test'
+      path: '/test'
+      fullPath: '/test'
+      preLoaderRoute: typeof TestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks': {
+      id: '/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof TasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plan': {
+      id: '/plan'
+      path: '/plan'
+      fullPath: '/plan'
+      preLoaderRoute: typeof PlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hello': {
+      id: '/hello'
+      path: '/hello'
+      fullPath: '/hello'
+      preLoaderRoute: typeof HelloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/generate-server-fn': {
+      id: '/generate-server-fn'
+      path: '/generate-server-fn'
+      fullPath: '/generate-server-fn'
+      preLoaderRoute: typeof GenerateServerFnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/generate-fetch': {
+      id: '/generate-fetch'
+      path: '/generate-fetch'
+      fullPath: '/generate-fetch'
+      preLoaderRoute: typeof GenerateFetchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/generate-env-aware': {
+      id: '/generate-env-aware'
+      path: '/generate-env-aware'
+      fullPath: '/generate-env-aware'
+      preLoaderRoute: typeof GenerateEnvAwareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/generate': {
+      id: '/generate'
+      path: '/generate'
+      fullPath: '/generate'
+      preLoaderRoute: typeof GenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +257,16 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalendarRoute: CalendarRoute,
+  GenerateRoute: GenerateRoute,
+  GenerateEnvAwareRoute: GenerateEnvAwareRoute,
+  GenerateFetchRoute: GenerateFetchRoute,
+  GenerateServerFnRoute: GenerateServerFnRoute,
+  HelloRoute: HelloRoute,
+  PlanRoute: PlanRoute,
+  TasksRoute: TasksRoute,
+  TestRoute: TestRoute,
+  TestMockRoute: TestMockRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
