@@ -9,11 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as Tokens_requestRouteImport } from './routes/tokens_request'
+import { Route as TokensRouteImport } from './routes/tokens'
 import { Route as TestMockRouteImport } from './routes/test-mock'
 import { Route as TestRouteImport } from './routes/test'
 import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PlanRouteImport } from './routes/plan'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as HelloRouteImport } from './routes/hello'
+import { Route as GenerateTanstackFormRouteImport } from './routes/generate-tanstack-form'
 import { Route as GenerateServerFnRouteImport } from './routes/generate-server-fn'
 import { Route as GenerateFetchRouteImport } from './routes/generate-fetch'
 import { Route as GenerateEnvAwareRouteImport } from './routes/generate-env-aware'
@@ -21,6 +26,16 @@ import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as IndexRouteImport } from './routes/index'
 
+const Tokens_requestRoute = Tokens_requestRouteImport.update({
+  id: '/tokens_request',
+  path: '/tokens_request',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TokensRoute = TokensRouteImport.update({
+  id: '/tokens',
+  path: '/tokens',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TestMockRoute = TestMockRouteImport.update({
   id: '/test-mock',
   path: '/test-mock',
@@ -36,14 +51,29 @@ const TasksRoute = TasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlanRoute = PlanRouteImport.update({
   id: '/plan',
   path: '/plan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HelloRoute = HelloRouteImport.update({
   id: '/hello',
   path: '/hello',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenerateTanstackFormRoute = GenerateTanstackFormRouteImport.update({
+  id: '/generate-tanstack-form',
+  path: '/generate-tanstack-form',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GenerateServerFnRoute = GenerateServerFnRouteImport.update({
@@ -84,11 +114,16 @@ export interface FileRoutesByFullPath {
   '/generate-env-aware': typeof GenerateEnvAwareRoute
   '/generate-fetch': typeof GenerateFetchRoute
   '/generate-server-fn': typeof GenerateServerFnRoute
+  '/generate-tanstack-form': typeof GenerateTanstackFormRoute
   '/hello': typeof HelloRoute
+  '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
+  '/signup': typeof SignupRoute
   '/tasks': typeof TasksRoute
   '/test': typeof TestRoute
   '/test-mock': typeof TestMockRoute
+  '/tokens': typeof TokensRoute
+  '/tokens_request': typeof Tokens_requestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -97,11 +132,16 @@ export interface FileRoutesByTo {
   '/generate-env-aware': typeof GenerateEnvAwareRoute
   '/generate-fetch': typeof GenerateFetchRoute
   '/generate-server-fn': typeof GenerateServerFnRoute
+  '/generate-tanstack-form': typeof GenerateTanstackFormRoute
   '/hello': typeof HelloRoute
+  '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
+  '/signup': typeof SignupRoute
   '/tasks': typeof TasksRoute
   '/test': typeof TestRoute
   '/test-mock': typeof TestMockRoute
+  '/tokens': typeof TokensRoute
+  '/tokens_request': typeof Tokens_requestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -111,11 +151,16 @@ export interface FileRoutesById {
   '/generate-env-aware': typeof GenerateEnvAwareRoute
   '/generate-fetch': typeof GenerateFetchRoute
   '/generate-server-fn': typeof GenerateServerFnRoute
+  '/generate-tanstack-form': typeof GenerateTanstackFormRoute
   '/hello': typeof HelloRoute
+  '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
+  '/signup': typeof SignupRoute
   '/tasks': typeof TasksRoute
   '/test': typeof TestRoute
   '/test-mock': typeof TestMockRoute
+  '/tokens': typeof TokensRoute
+  '/tokens_request': typeof Tokens_requestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -126,11 +171,16 @@ export interface FileRouteTypes {
     | '/generate-env-aware'
     | '/generate-fetch'
     | '/generate-server-fn'
+    | '/generate-tanstack-form'
     | '/hello'
+    | '/login'
     | '/plan'
+    | '/signup'
     | '/tasks'
     | '/test'
     | '/test-mock'
+    | '/tokens'
+    | '/tokens_request'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,11 +189,16 @@ export interface FileRouteTypes {
     | '/generate-env-aware'
     | '/generate-fetch'
     | '/generate-server-fn'
+    | '/generate-tanstack-form'
     | '/hello'
+    | '/login'
     | '/plan'
+    | '/signup'
     | '/tasks'
     | '/test'
     | '/test-mock'
+    | '/tokens'
+    | '/tokens_request'
   id:
     | '__root__'
     | '/'
@@ -152,11 +207,16 @@ export interface FileRouteTypes {
     | '/generate-env-aware'
     | '/generate-fetch'
     | '/generate-server-fn'
+    | '/generate-tanstack-form'
     | '/hello'
+    | '/login'
     | '/plan'
+    | '/signup'
     | '/tasks'
     | '/test'
     | '/test-mock'
+    | '/tokens'
+    | '/tokens_request'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -166,15 +226,34 @@ export interface RootRouteChildren {
   GenerateEnvAwareRoute: typeof GenerateEnvAwareRoute
   GenerateFetchRoute: typeof GenerateFetchRoute
   GenerateServerFnRoute: typeof GenerateServerFnRoute
+  GenerateTanstackFormRoute: typeof GenerateTanstackFormRoute
   HelloRoute: typeof HelloRoute
+  LoginRoute: typeof LoginRoute
   PlanRoute: typeof PlanRoute
+  SignupRoute: typeof SignupRoute
   TasksRoute: typeof TasksRoute
   TestRoute: typeof TestRoute
   TestMockRoute: typeof TestMockRoute
+  TokensRoute: typeof TokensRoute
+  Tokens_requestRoute: typeof Tokens_requestRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tokens_request': {
+      id: '/tokens_request'
+      path: '/tokens_request'
+      fullPath: '/tokens_request'
+      preLoaderRoute: typeof Tokens_requestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tokens': {
+      id: '/tokens'
+      path: '/tokens'
+      fullPath: '/tokens'
+      preLoaderRoute: typeof TokensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/test-mock': {
       id: '/test-mock'
       path: '/test-mock'
@@ -196,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TasksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/plan': {
       id: '/plan'
       path: '/plan'
@@ -203,11 +289,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/hello': {
       id: '/hello'
       path: '/hello'
       fullPath: '/hello'
       preLoaderRoute: typeof HelloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/generate-tanstack-form': {
+      id: '/generate-tanstack-form'
+      path: '/generate-tanstack-form'
+      fullPath: '/generate-tanstack-form'
+      preLoaderRoute: typeof GenerateTanstackFormRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/generate-server-fn': {
@@ -262,11 +362,16 @@ const rootRouteChildren: RootRouteChildren = {
   GenerateEnvAwareRoute: GenerateEnvAwareRoute,
   GenerateFetchRoute: GenerateFetchRoute,
   GenerateServerFnRoute: GenerateServerFnRoute,
+  GenerateTanstackFormRoute: GenerateTanstackFormRoute,
   HelloRoute: HelloRoute,
+  LoginRoute: LoginRoute,
   PlanRoute: PlanRoute,
+  SignupRoute: SignupRoute,
   TasksRoute: TasksRoute,
   TestRoute: TestRoute,
   TestMockRoute: TestMockRoute,
+  TokensRoute: TokensRoute,
+  Tokens_requestRoute: Tokens_requestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

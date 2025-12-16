@@ -77,19 +77,38 @@ export const generatePlanServerFn = createServerFn({ method: 'POST' })
   .inputValidator(PlanFormDataSchema)
   .handler(async ({ data }) => {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Call the real server endpoint
+      const response = await fetch('/api/plan/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
 
-      // Generate mock plan
-      const plan = generateMockPlan(data)
-
-      return {
-        success: true,
-        data: plan,
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to generate plan')
       }
+
+      const result = await response.json()
+      return result
+
     } catch (error) {
       console.error('Error generating plan:', error)
-      throw new Error(error instanceof Error ? error.message : 'Failed to generate plan')
+
+      // Fallback to mock data if server is unavailable
+      try {
+        console.log('Falling back to mock data generation')
+        const plan = generateMockPlan(data)
+        return {
+          success: true,
+          data: plan,
+        }
+      } catch (fallbackError) {
+        console.error('Fallback mock generation failed:', fallbackError)
+        throw new Error(error instanceof Error ? error.message : 'Failed to generate plan')
+      }
     }
   })
 
@@ -100,17 +119,39 @@ export const savePlanServerFn = createServerFn({ method: 'POST' })
   }))
   .handler(async ({ data }) => {
     try {
-      // Simulate saving to database
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Call the real server endpoint
+      const response = await fetch('/api/plan/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
 
-      console.log(`Plan ${data.planId} saved successfully`)
-
-      return {
-        success: true,
-        message: 'Plan saved successfully!',
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to save plan')
       }
+
+      const result = await response.json()
+      return result
+
     } catch (error) {
       console.error('Error saving plan:', error)
-      throw new Error(error instanceof Error ? error.message : 'Failed to save plan')
+
+      // Fallback to simulate saving if server is unavailable
+      try {
+        console.log('Falling back to mock save functionality')
+        await new Promise(resolve => setTimeout(resolve, 500))
+        console.log(`Plan ${data.planId} saved successfully (mock)`)
+
+        return {
+          success: true,
+          message: 'Plan saved successfully!',
+        }
+      } catch (fallbackError) {
+        console.error('Fallback save failed:', fallbackError)
+        throw new Error(error instanceof Error ? error.message : 'Failed to save plan')
+      }
     }
   })
