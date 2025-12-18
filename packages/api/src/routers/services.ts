@@ -1,16 +1,17 @@
 import { Hono } from 'hono';
 import {
    preparePlanGeneration,
-   saveGeneratedPlan,
    logActivityWithDetails,
-   recalculateInsights as recalculateInsightsQuery
+   recalculateInsights as recalculateInsightsQuery,
+   insertAiRequestLog
 } from '@testing-server/db';
 import { getOpenRouterService } from '../lib/openrouter';
 import { handleAIServiceFailure } from '../services/plan-generation';
+import { responseExtractor } from '@testing-server/response-parser';
 
 export const servicesRouter = new Hono();
 
-// POST /service/generate - Internal AI plan generation service
+// POST /service/generate - Internal AI plan generation service (Approach 1: Direct Response)
 servicesRouter.post('/generate', async (c) => {
    try {
       const { preferenceId, userId } = await c.req.json();
@@ -27,18 +28,21 @@ servicesRouter.post('/generate', async (c) => {
       const aiResponse = await openRouterService.generatePlan(planData.prompt);
       console.log(`OpenRouter response received, format: ${aiResponse.metadata.format}`);
 
-      // Save the generated plan to the database
-      const planId = await saveGeneratedPlan(
-         userId,
-         planData.preferenceId,
-         planData.monthYear,
-         planData.prompt,
-         aiResponse
-      );
+      // Log the AI response for debugging
+      await insertAiRequestLog(aiResponse);
+
+      // Parse the AI response using the shared parser
+      const parsedResponse = responseExtractor.extractAllStructuredData(aiResponse.rawContent);
+      const monthlyPlan = responseExtractor.convertToMonthlyPlan(parsedResponse, planData.monthYear);
 
       return c.json({
          success: true,
-         planId,
+         data: {
+            aiResponse: parsedResponse,
+            monthlyPlan,
+            monthYear: planData.monthYear,
+            preferenceId: planData.preferenceId
+         },
          message: 'Plan generated successfully'
       });
 

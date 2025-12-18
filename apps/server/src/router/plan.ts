@@ -6,8 +6,10 @@ import {
    getLatestGoalPreference,
    getCurrentMonthlyPlanWithTasks,
    updateTaskStatus as updateTaskStatusQuery,
-   logActivity as logActivityQuery
+   logActivity as logActivityQuery,
+   saveGeneratedPlan
 } from '@testing-server/db';
+import { responseExtractor } from '@testing-server/response-parser';
 import type { Variables } from '../index';
 
 export const planRouter = new Hono<{ Variables: Variables }>();
@@ -86,11 +88,11 @@ planRouter.post('/inputs', zValidator('json', createPlanInputSchema), async (c) 
             throw new Error(result.error || 'Failed to generate plan');
          }
 
-         // 3. Return success response with plan ID
+         // 3. Return success response with monthly plan data (Approach 1: Direct Response)
          return c.json({
             success: true,
             preferenceId: newPreference.id,
-            planId: result.planId,
+            data: result.data, // Contains aiResponse, monthlyPlan, monthYear, preferenceId
             message: 'Planning inputs saved and plan generated successfully'
          });
       } catch (generationError) {
@@ -135,6 +137,56 @@ planRouter.post('/save', zValidator('json', z.object({
       return c.json({
          success: false,
          error: error instanceof Error ? error.message : 'Failed to save plan'
+      }, 500);
+   }
+});
+
+// POST /api/plan/save-parsed - Save parsed AI response to database (Approach 1: Direct Response)
+const saveParsedPlanSchema = z.object({
+   userId: z.string(),
+   preferenceId: z.number(),
+   monthYear: z.string(),
+   aiResponse: z.any(), // AIResponseWithMetadata
+   monthlyPlan: z.any() // MonthlyPlan
+});
+
+planRouter.post('/save-parsed', zValidator('json', saveParsedPlanSchema), async (c) => {
+   try {
+      const { userId, preferenceId, monthYear, aiResponse, monthlyPlan } = c.req.valid('json');
+
+      // Convert MonthlyPlan back to AI response format for database storage
+      const aiResponseForDB = {
+         rawContent: aiResponse.rawContent,
+         metadata: aiResponse.metadata
+      };
+
+      // Save the generated plan to the database using existing logic
+      const planId = await saveGeneratedPlan(
+         userId,
+         preferenceId,
+         monthYear,
+         '', // prompt - we don't have it in this flow, could be passed if needed
+         aiResponseForDB
+      );
+
+      if (!planId) {
+         return c.json({
+            success: false,
+            error: 'Failed to save plan to database'
+         }, 500);
+      }
+
+      return c.json({
+         success: true,
+         planId,
+         message: 'Parsed plan saved successfully to database'
+      });
+
+   } catch (error) {
+      console.error('Error saving parsed plan:', error);
+      return c.json({
+         success: false,
+         error: error instanceof Error ? error.message : 'Failed to save parsed plan'
       }, 500);
    }
 });
