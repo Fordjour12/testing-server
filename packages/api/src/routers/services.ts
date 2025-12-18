@@ -5,11 +5,10 @@ import {
    logActivityWithDetails,
    recalculateInsights as recalculateInsightsQuery
 } from '@testing-server/db';
-import { getOpenRouterService, handleAIServiceFailure } from '@testing-server/api';
-import { type Variables } from "../index"
+import { getOpenRouterService } from '../lib/openrouter';
+import { handleAIServiceFailure } from '../services/plan-generation';
 
-
-export const servicesRouter = new Hono<{ Variables: Variables }>();
+export const servicesRouter = new Hono();
 
 // POST /service/generate - Internal AI plan generation service
 servicesRouter.post('/generate', async (c) => {
@@ -28,7 +27,6 @@ servicesRouter.post('/generate', async (c) => {
       const aiResponse = await openRouterService.generatePlan(planData.prompt);
       console.log(`OpenRouter response received, format: ${aiResponse.metadata.format}`);
 
-
       // Save the generated plan to the database
       const planId = await saveGeneratedPlan(
          userId,
@@ -46,13 +44,16 @@ servicesRouter.post('/generate', async (c) => {
 
    } catch (error) {
       console.error('Error generating plan:', error);
-      return c.json({
-         success: false,
-         error: handleAIServiceFailure(error).message
-      }, 500);
+      try {
+         handleAIServiceFailure(error);
+      } catch (serviceError) {
+         return c.json({
+            success: false,
+            error: serviceError instanceof Error ? serviceError.message : 'Unknown service error'
+         }, 500);
+      }
    }
 });
-
 
 // POST /service/log-activity - Internal activity logging service
 servicesRouter.post('/log-activity', async (c) => {
@@ -104,5 +105,3 @@ servicesRouter.post('/recalculate-insights', async (c) => {
       }, 500);
    }
 });
-
-

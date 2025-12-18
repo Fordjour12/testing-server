@@ -27,10 +27,9 @@ export const userGoalsAndPreferences = pgTable('user_goals_and_preferences', {
   inputSavedAt: timestamp('input_saved_at').notNull().defaultNow(),
 });
 
-export const preferencesRelations = relations(userGoalsAndPreferences, ({ one, many }) => ({
+export const preferencesRelations = relations(userGoalsAndPreferences, ({ one }) => ({
   user: one(user, {
     fields: [userGoalsAndPreferences.userId],
     references: [user.id],
   }),
-  plans: many(() => import('./monthly-plans').monthlyPlans),
 }));

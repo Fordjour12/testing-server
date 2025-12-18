@@ -28,10 +28,9 @@ export const planTasks = pgTable('plan_tasks', {
   completedAt: timestamp('completed_at'), // Role: When the task was actually completed.
 });
 
-export const tasksRelations = relations(planTasks, ({ one, many }) => ({
+export const tasksRelations = relations(planTasks, ({ one }) => ({
   plan: one(monthlyPlans, {
     fields: [planTasks.planId],
     references: [monthlyPlans.id],
   }),
-  history: many(() => import('./user-activity-history').userActivityHistory),
 }));

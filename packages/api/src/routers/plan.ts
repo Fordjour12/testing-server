@@ -8,7 +8,7 @@ import {
    updateTaskStatus as updateTaskStatusQuery,
    logActivity as logActivityQuery
 } from '@testing-server/db';
-// Create router without specific Variables type for better reusability
+
 export const planRouter = new Hono();
 
 // Zod schemas for validation
@@ -78,7 +78,7 @@ planRouter.post('/inputs', zValidator('json', createPlanInputSchema), async (c) 
             })
          });
 
-         const result = await response.json();
+         const result = await response.json() as { success?: boolean; error?: string; planId?: number };
          console.log("result", result)
 
          if (!response.ok || !result.success) {

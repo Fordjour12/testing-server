@@ -2,7 +2,7 @@
 export { OpenRouterService, getOpenRouterService, isConfigured } from './lib/openrouter';
 export { responseExtractor } from './lib/response-extractor';
 
-// Export types
+// Re-export types from shared types package
 export type {
    StructuredAIResponse,
    WeeklyBreakdown,
@@ -13,7 +13,7 @@ export type {
    Priority,
    Complexity,
    WeekendFocus
-} from './types/ai-response';
+} from '@testing-server/types';
 
 // Export services
 export {
@@ -24,3 +24,4 @@ export {
 
 // Export routers
 export { planRouter } from './routers/plan';
+export { servicesRouter } from './routers/services';

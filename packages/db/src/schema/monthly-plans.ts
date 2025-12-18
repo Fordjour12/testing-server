@@ -28,7 +28,7 @@ export const monthlyPlans = pgTable('monthly_plans', {
   generatedAt: timestamp('generated_at').notNull().defaultNow(),
 });
 
-export const plansRelations = relations(monthlyPlans, ({ one, many }) => ({
+export const plansRelations = relations(monthlyPlans, ({ one }) => ({
   user: one(user, {
     fields: [monthlyPlans.userId],
     references: [user.id],
@@ -37,5 +37,4 @@ export const plansRelations = relations(monthlyPlans, ({ one, many }) => ({
     fields: [monthlyPlans.preferenceId],
     references: [userGoalsAndPreferences.id],
   }),
-  tasks: many(() => import('./plan-tasks').planTasks),
 }));

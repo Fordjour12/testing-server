@@ -1,5 +1,5 @@
-import { responseExtractor } from '../lib/response-extractor';
 import type { AIResponseWithMetadata } from '@testing-server/types';
+import { responseExtractor } from '../lib/response-extractor';
 
 /**
  * Handle AI service failure by returning proper error information

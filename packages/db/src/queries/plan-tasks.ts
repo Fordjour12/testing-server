@@ -57,9 +57,45 @@ export async function updateTaskStatus(
 
 export async function getTaskById(taskId: number) {
   const [task] = await db
-    .select()
+    .select({
+      id: planTasks.id,
+      planId: planTasks.planId,
+      taskDescription: planTasks.taskDescription,
+      focusArea: planTasks.focusArea,
+      startTime: planTasks.startTime,
+      endTime: planTasks.endTime,
+      difficultyLevel: planTasks.difficultyLevel,
+      schedulingReason: planTasks.schedulingReason,
+      isCompleted: planTasks.isCompleted,
+      completedAt: planTasks.completedAt
+    })
     .from(planTasks)
     .where(eq(planTasks.id, taskId))
     .limit(1);
   return task;
+}
+
+export async function getTaskWithUserId(taskId: number) {
+  const { monthlyPlans } = await import("../schema/monthly-plans");
+
+  const result = await db
+    .select({
+      taskId: planTasks.id,
+      planId: planTasks.planId,
+      taskDescription: planTasks.taskDescription,
+      focusArea: planTasks.focusArea,
+      startTime: planTasks.startTime,
+      endTime: planTasks.endTime,
+      difficultyLevel: planTasks.difficultyLevel,
+      schedulingReason: planTasks.schedulingReason,
+      isCompleted: planTasks.isCompleted,
+      completedAt: planTasks.completedAt,
+      userId: monthlyPlans.userId
+    })
+    .from(planTasks)
+    .innerJoin(monthlyPlans, eq(planTasks.planId, monthlyPlans.id))
+    .where(eq(planTasks.id, taskId))
+    .limit(1);
+
+  return result[0];
 }
