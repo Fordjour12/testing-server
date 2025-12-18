@@ -38,6 +38,7 @@ app.route("/service", servicesRouter);
 app.route("/api/streaming", streamingRouter);
 app.route("/api/mock", mockRouter);
 app.route("/api/quota", quotaRouter);
+app.route("/api/staging", stagingRouter);
 
 app.get("/", (c) => {
    return c.text("OK");

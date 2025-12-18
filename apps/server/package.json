@@ -15,6 +15,7 @@
     "@testing-server/auth": "workspace:*",
     "@testing-server/db": "workspace:*",
     "@testing-server/api": "workspace:*",
+    "@testing-server/response-parser": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "hono": "^4.8.2",

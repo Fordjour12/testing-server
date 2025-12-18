@@ -86,12 +86,12 @@ planRouter.post('/inputs', zValidator('json', createPlanInputSchema), async (c) 
             throw new Error(result.error || 'Failed to generate plan');
          }
 
-         // 3. Return success response with plan ID
+         // 3. Return success response with staging key (Approach 2: Staging Table)
          return c.json({
             success: true,
             preferenceId: newPreference.id,
-            planId: result.planId,
-            message: 'Planning inputs saved and plan generated successfully'
+            data: result.data, // Contains stagingKey, stagingPlan, expiresAt
+            message: 'Planning inputs saved and plan staged for preview'
          });
       } catch (generationError) {
          console.error('Error during plan generation:', generationError);

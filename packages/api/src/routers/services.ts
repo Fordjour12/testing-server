@@ -1,16 +1,18 @@
 import { Hono } from 'hono';
 import {
    preparePlanGeneration,
-   saveGeneratedPlan,
+   createStagingPlan,
+   generateStagingKey,
    logActivityWithDetails,
    recalculateInsights as recalculateInsightsQuery
 } from '@testing-server/db';
 import { getOpenRouterService } from '../lib/openrouter';
 import { handleAIServiceFailure } from '../services/plan-generation';
+import { responseExtractor } from '@testing-server/response-parser';
 
 export const servicesRouter = new Hono();
 
-// POST /service/generate - Internal AI plan generation service
+// POST /service/generate - Internal AI plan generation service (Approach 2: Staging Table)
 servicesRouter.post('/generate', async (c) => {
    try {
       const { preferenceId, userId } = await c.req.json();
@@ -27,19 +29,33 @@ servicesRouter.post('/generate', async (c) => {
       const aiResponse = await openRouterService.generatePlan(planData.prompt);
       console.log(`OpenRouter response received, format: ${aiResponse.metadata.format}`);
 
-      // Save the generated plan to the database
-      const planId = await saveGeneratedPlan(
+      // Parse the AI response using the shared parser
+      const parsedResponse = responseExtractor.extractAllStructuredData(aiResponse.rawContent);
+      const monthlyPlan = responseExtractor.convertToMonthlyPlan(parsedResponse, planData.monthYear);
+
+      // Generate unique staging key
+      const stagingKey = generateStagingKey(userId);
+
+      // Save to staging table
+      const stagingPlan = await createStagingPlan({
          userId,
-         planData.preferenceId,
-         planData.monthYear,
-         planData.prompt,
-         aiResponse
-      );
+         stagingKey,
+         planData: monthlyPlan,
+         extractionConfidence: parsedResponse.metadata.confidence,
+         extractionNotes: parsedResponse.metadata.extractionNotes,
+         aiResponseRaw: parsedResponse,
+         monthYear: planData.monthYear,
+         preferencesId: planData.preferenceId
+      });
 
       return c.json({
          success: true,
-         planId,
-         message: 'Plan generated successfully'
+         data: {
+            stagingKey,
+            stagingPlan,
+            expiresAt: stagingPlan.expiresAt
+         },
+         message: 'Plan generated and staged for preview'
       });
 
    } catch (error) {
