@@ -1,33 +1,33 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { LoginForm } from "@/components/login-form"
+import { SignupForm } from '@/components/signup-form'
 import { Card, CardContent } from '@/components/ui/card'
 
-export const Route = createFileRoute('/login')({
+export const Route = createFileRoute('/(auth)/signup')({
    component: RouteComponent,
 })
+//TODO: must give a user some token as soon as they sign up or make them claim their token
 
 function RouteComponent() {
    const [isLoading, setIsLoading] = useState(false)
    const [message, setMessage] = useState<string | null>(null)
 
+
    return (
-      <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-         <div className="w-full max-w-sm">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+         <div className="w-full max-w-md">
             {message && (
                <Card className="mb-6">
                   <CardContent className="pt-6">
-                     <p className={`text-sm ${message.includes('successful') ? 'text-green-600' : 'text-destructive'}`}>
+                     <p className={`text-sm ${message.includes('successfully') ? 'text-green-600' : 'text-destructive'}`}>
                         {message}
                      </p>
                   </CardContent>
                </Card>
             )}
 
-            <LoginForm isLoading={isLoading} />
+            <SignupForm isLoading={isLoading} />
          </div>
       </div>
    )
 }
-
-

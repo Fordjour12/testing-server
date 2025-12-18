@@ -9,88 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as Tokens_requestRouteImport } from './routes/tokens_request'
-import { Route as TokensRouteImport } from './routes/tokens'
-import { Route as TestMockRouteImport } from './routes/test-mock'
-import { Route as TestRouteImport } from './routes/test'
-import { Route as TasksRouteImport } from './routes/tasks'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as PlanRouteImport } from './routes/plan'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as HelloRouteImport } from './routes/hello'
-import { Route as GenerateTanstackFormRouteImport } from './routes/generate-tanstack-form'
-import { Route as GenerateServerFnRouteImport } from './routes/generate-server-fn'
-import { Route as GenerateFetchRouteImport } from './routes/generate-fetch'
-import { Route as GenerateEnvAwareRouteImport } from './routes/generate-env-aware'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TokenIndexRouteImport } from './routes/token/index'
+import { Route as TokenRequestRouteImport } from './routes/token/request'
+import { Route as TokenHistoryRouteImport } from './routes/token/history'
+import { Route as dashboardingTestMockRouteImport } from './routes/(dashboarding)/test-mock'
+import { Route as dashboardingTasksRouteImport } from './routes/(dashboarding)/tasks'
+import { Route as dashboardingHelloRouteImport } from './routes/(dashboarding)/hello'
+import { Route as authSignupRouteImport } from './routes/(auth)/signup'
+import { Route as authLoginRouteImport } from './routes/(auth)/login'
 
-const Tokens_requestRoute = Tokens_requestRouteImport.update({
-  id: '/tokens_request',
-  path: '/tokens_request',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TokensRoute = TokensRouteImport.update({
-  id: '/tokens',
-  path: '/tokens',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TestMockRoute = TestMockRouteImport.update({
-  id: '/test-mock',
-  path: '/test-mock',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TestRoute = TestRouteImport.update({
-  id: '/test',
-  path: '/test',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TasksRoute = TasksRouteImport.update({
-  id: '/tasks',
-  path: '/tasks',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlanRoute = PlanRouteImport.update({
-  id: '/plan',
-  path: '/plan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HelloRoute = HelloRouteImport.update({
-  id: '/hello',
-  path: '/hello',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GenerateTanstackFormRoute = GenerateTanstackFormRouteImport.update({
-  id: '/generate-tanstack-form',
-  path: '/generate-tanstack-form',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GenerateServerFnRoute = GenerateServerFnRouteImport.update({
-  id: '/generate-server-fn',
-  path: '/generate-server-fn',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GenerateFetchRoute = GenerateFetchRouteImport.update({
-  id: '/generate-fetch',
-  path: '/generate-fetch',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GenerateEnvAwareRoute = GenerateEnvAwareRouteImport.update({
-  id: '/generate-env-aware',
-  path: '/generate-env-aware',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const GenerateRoute = GenerateRouteImport.update({
   id: '/generate',
   path: '/generate',
@@ -106,61 +36,86 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TokenIndexRoute = TokenIndexRouteImport.update({
+  id: '/token/',
+  path: '/token/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TokenRequestRoute = TokenRequestRouteImport.update({
+  id: '/token/request',
+  path: '/token/request',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TokenHistoryRoute = TokenHistoryRouteImport.update({
+  id: '/token/history',
+  path: '/token/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const dashboardingTestMockRoute = dashboardingTestMockRouteImport.update({
+  id: '/(dashboarding)/test-mock',
+  path: '/test-mock',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const dashboardingTasksRoute = dashboardingTasksRouteImport.update({
+  id: '/(dashboarding)/tasks',
+  path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const dashboardingHelloRoute = dashboardingHelloRouteImport.update({
+  id: '/(dashboarding)/hello',
+  path: '/hello',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authSignupRoute = authSignupRouteImport.update({
+  id: '/(auth)/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authLoginRoute = authLoginRouteImport.update({
+  id: '/(auth)/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
   '/generate': typeof GenerateRoute
-  '/generate-env-aware': typeof GenerateEnvAwareRoute
-  '/generate-fetch': typeof GenerateFetchRoute
-  '/generate-server-fn': typeof GenerateServerFnRoute
-  '/generate-tanstack-form': typeof GenerateTanstackFormRoute
-  '/hello': typeof HelloRoute
-  '/login': typeof LoginRoute
-  '/plan': typeof PlanRoute
-  '/signup': typeof SignupRoute
-  '/tasks': typeof TasksRoute
-  '/test': typeof TestRoute
-  '/test-mock': typeof TestMockRoute
-  '/tokens': typeof TokensRoute
-  '/tokens_request': typeof Tokens_requestRoute
+  '/login': typeof authLoginRoute
+  '/signup': typeof authSignupRoute
+  '/hello': typeof dashboardingHelloRoute
+  '/tasks': typeof dashboardingTasksRoute
+  '/test-mock': typeof dashboardingTestMockRoute
+  '/token/history': typeof TokenHistoryRoute
+  '/token/request': typeof TokenRequestRoute
+  '/token': typeof TokenIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
   '/generate': typeof GenerateRoute
-  '/generate-env-aware': typeof GenerateEnvAwareRoute
-  '/generate-fetch': typeof GenerateFetchRoute
-  '/generate-server-fn': typeof GenerateServerFnRoute
-  '/generate-tanstack-form': typeof GenerateTanstackFormRoute
-  '/hello': typeof HelloRoute
-  '/login': typeof LoginRoute
-  '/plan': typeof PlanRoute
-  '/signup': typeof SignupRoute
-  '/tasks': typeof TasksRoute
-  '/test': typeof TestRoute
-  '/test-mock': typeof TestMockRoute
-  '/tokens': typeof TokensRoute
-  '/tokens_request': typeof Tokens_requestRoute
+  '/login': typeof authLoginRoute
+  '/signup': typeof authSignupRoute
+  '/hello': typeof dashboardingHelloRoute
+  '/tasks': typeof dashboardingTasksRoute
+  '/test-mock': typeof dashboardingTestMockRoute
+  '/token/history': typeof TokenHistoryRoute
+  '/token/request': typeof TokenRequestRoute
+  '/token': typeof TokenIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
   '/generate': typeof GenerateRoute
-  '/generate-env-aware': typeof GenerateEnvAwareRoute
-  '/generate-fetch': typeof GenerateFetchRoute
-  '/generate-server-fn': typeof GenerateServerFnRoute
-  '/generate-tanstack-form': typeof GenerateTanstackFormRoute
-  '/hello': typeof HelloRoute
-  '/login': typeof LoginRoute
-  '/plan': typeof PlanRoute
-  '/signup': typeof SignupRoute
-  '/tasks': typeof TasksRoute
-  '/test': typeof TestRoute
-  '/test-mock': typeof TestMockRoute
-  '/tokens': typeof TokensRoute
-  '/tokens_request': typeof Tokens_requestRoute
+  '/(auth)/login': typeof authLoginRoute
+  '/(auth)/signup': typeof authSignupRoute
+  '/(dashboarding)/hello': typeof dashboardingHelloRoute
+  '/(dashboarding)/tasks': typeof dashboardingTasksRoute
+  '/(dashboarding)/test-mock': typeof dashboardingTestMockRoute
+  '/token/history': typeof TokenHistoryRoute
+  '/token/request': typeof TokenRequestRoute
+  '/token/': typeof TokenIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -168,169 +123,58 @@ export interface FileRouteTypes {
     | '/'
     | '/calendar'
     | '/generate'
-    | '/generate-env-aware'
-    | '/generate-fetch'
-    | '/generate-server-fn'
-    | '/generate-tanstack-form'
-    | '/hello'
     | '/login'
-    | '/plan'
     | '/signup'
+    | '/hello'
     | '/tasks'
-    | '/test'
     | '/test-mock'
-    | '/tokens'
-    | '/tokens_request'
+    | '/token/history'
+    | '/token/request'
+    | '/token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/calendar'
     | '/generate'
-    | '/generate-env-aware'
-    | '/generate-fetch'
-    | '/generate-server-fn'
-    | '/generate-tanstack-form'
-    | '/hello'
     | '/login'
-    | '/plan'
     | '/signup'
+    | '/hello'
     | '/tasks'
-    | '/test'
     | '/test-mock'
-    | '/tokens'
-    | '/tokens_request'
+    | '/token/history'
+    | '/token/request'
+    | '/token'
   id:
     | '__root__'
     | '/'
     | '/calendar'
     | '/generate'
-    | '/generate-env-aware'
-    | '/generate-fetch'
-    | '/generate-server-fn'
-    | '/generate-tanstack-form'
-    | '/hello'
-    | '/login'
-    | '/plan'
-    | '/signup'
-    | '/tasks'
-    | '/test'
-    | '/test-mock'
-    | '/tokens'
-    | '/tokens_request'
+    | '/(auth)/login'
+    | '/(auth)/signup'
+    | '/(dashboarding)/hello'
+    | '/(dashboarding)/tasks'
+    | '/(dashboarding)/test-mock'
+    | '/token/history'
+    | '/token/request'
+    | '/token/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CalendarRoute: typeof CalendarRoute
   GenerateRoute: typeof GenerateRoute
-  GenerateEnvAwareRoute: typeof GenerateEnvAwareRoute
-  GenerateFetchRoute: typeof GenerateFetchRoute
-  GenerateServerFnRoute: typeof GenerateServerFnRoute
-  GenerateTanstackFormRoute: typeof GenerateTanstackFormRoute
-  HelloRoute: typeof HelloRoute
-  LoginRoute: typeof LoginRoute
-  PlanRoute: typeof PlanRoute
-  SignupRoute: typeof SignupRoute
-  TasksRoute: typeof TasksRoute
-  TestRoute: typeof TestRoute
-  TestMockRoute: typeof TestMockRoute
-  TokensRoute: typeof TokensRoute
-  Tokens_requestRoute: typeof Tokens_requestRoute
+  authLoginRoute: typeof authLoginRoute
+  authSignupRoute: typeof authSignupRoute
+  dashboardingHelloRoute: typeof dashboardingHelloRoute
+  dashboardingTasksRoute: typeof dashboardingTasksRoute
+  dashboardingTestMockRoute: typeof dashboardingTestMockRoute
+  TokenHistoryRoute: typeof TokenHistoryRoute
+  TokenRequestRoute: typeof TokenRequestRoute
+  TokenIndexRoute: typeof TokenIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tokens_request': {
-      id: '/tokens_request'
-      path: '/tokens_request'
-      fullPath: '/tokens_request'
-      preLoaderRoute: typeof Tokens_requestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tokens': {
-      id: '/tokens'
-      path: '/tokens'
-      fullPath: '/tokens'
-      preLoaderRoute: typeof TokensRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/test-mock': {
-      id: '/test-mock'
-      path: '/test-mock'
-      fullPath: '/test-mock'
-      preLoaderRoute: typeof TestMockRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/test': {
-      id: '/test'
-      path: '/test'
-      fullPath: '/test'
-      preLoaderRoute: typeof TestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tasks': {
-      id: '/tasks'
-      path: '/tasks'
-      fullPath: '/tasks'
-      preLoaderRoute: typeof TasksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/plan': {
-      id: '/plan'
-      path: '/plan'
-      fullPath: '/plan'
-      preLoaderRoute: typeof PlanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/hello': {
-      id: '/hello'
-      path: '/hello'
-      fullPath: '/hello'
-      preLoaderRoute: typeof HelloRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/generate-tanstack-form': {
-      id: '/generate-tanstack-form'
-      path: '/generate-tanstack-form'
-      fullPath: '/generate-tanstack-form'
-      preLoaderRoute: typeof GenerateTanstackFormRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/generate-server-fn': {
-      id: '/generate-server-fn'
-      path: '/generate-server-fn'
-      fullPath: '/generate-server-fn'
-      preLoaderRoute: typeof GenerateServerFnRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/generate-fetch': {
-      id: '/generate-fetch'
-      path: '/generate-fetch'
-      fullPath: '/generate-fetch'
-      preLoaderRoute: typeof GenerateFetchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/generate-env-aware': {
-      id: '/generate-env-aware'
-      path: '/generate-env-aware'
-      fullPath: '/generate-env-aware'
-      preLoaderRoute: typeof GenerateEnvAwareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/generate': {
       id: '/generate'
       path: '/generate'
@@ -352,6 +196,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/token/': {
+      id: '/token/'
+      path: '/token'
+      fullPath: '/token'
+      preLoaderRoute: typeof TokenIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/token/request': {
+      id: '/token/request'
+      path: '/token/request'
+      fullPath: '/token/request'
+      preLoaderRoute: typeof TokenRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/token/history': {
+      id: '/token/history'
+      path: '/token/history'
+      fullPath: '/token/history'
+      preLoaderRoute: typeof TokenHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(dashboarding)/test-mock': {
+      id: '/(dashboarding)/test-mock'
+      path: '/test-mock'
+      fullPath: '/test-mock'
+      preLoaderRoute: typeof dashboardingTestMockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(dashboarding)/tasks': {
+      id: '/(dashboarding)/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof dashboardingTasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(dashboarding)/hello': {
+      id: '/(dashboarding)/hello'
+      path: '/hello'
+      fullPath: '/hello'
+      preLoaderRoute: typeof dashboardingHelloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/signup': {
+      id: '/(auth)/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof authSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/login': {
+      id: '/(auth)/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof authLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -359,19 +259,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CalendarRoute: CalendarRoute,
   GenerateRoute: GenerateRoute,
-  GenerateEnvAwareRoute: GenerateEnvAwareRoute,
-  GenerateFetchRoute: GenerateFetchRoute,
-  GenerateServerFnRoute: GenerateServerFnRoute,
-  GenerateTanstackFormRoute: GenerateTanstackFormRoute,
-  HelloRoute: HelloRoute,
-  LoginRoute: LoginRoute,
-  PlanRoute: PlanRoute,
-  SignupRoute: SignupRoute,
-  TasksRoute: TasksRoute,
-  TestRoute: TestRoute,
-  TestMockRoute: TestMockRoute,
-  TokensRoute: TokensRoute,
-  Tokens_requestRoute: Tokens_requestRoute,
+  authLoginRoute: authLoginRoute,
+  authSignupRoute: authSignupRoute,
+  dashboardingHelloRoute: dashboardingHelloRoute,
+  dashboardingTasksRoute: dashboardingTasksRoute,
+  dashboardingTestMockRoute: dashboardingTestMockRoute,
+  TokenHistoryRoute: TokenHistoryRoute,
+  TokenRequestRoute: TokenRequestRoute,
+  TokenIndexRoute: TokenIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

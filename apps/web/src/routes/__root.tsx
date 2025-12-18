@@ -96,14 +96,14 @@ function Navigation() {
                   {isAuthenticated && (
                      <div className="flex items-center gap-4 text-sm">
                         <Link
-                           to="/generate-tanstack-form"
+                           to="/generate"
                            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted transition-colors"
                         >
                            <Home className="h-4 w-4" />
                            Dashboard
                         </Link>
                         <Link
-                           to="/tokens"
+                           to="/token"
                            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted transition-colors"
                         >
                            <Zap className="h-4 w-4" />

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Code, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { planApi, API_ENDPOINTS, currentApiBaseUrl } from '@/lib/api-utils'
 
-export const Route = createFileRoute('/test-mock')({
+export const Route = createFileRoute('/(dashboarding)/test-mock')({
    component: TestMockRoute,
 })
 

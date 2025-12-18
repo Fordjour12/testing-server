@@ -1,5 +1,10 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import { userGoalsAndPreferences } from './user-goals-and-preferences';
+import { monthlyPlans } from './monthly-plans';
+import { generationQuota } from './generation-quota';
+import { userActivityHistory } from './user-activity-history';
+import { userProductivityInsights } from './user-productivity-insights';
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -76,11 +81,11 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
 	sessions: many(session),
 	accounts: many(account),
-	preferences: many(() => import('./user-goals-and-preferences').userGoalsAndPreferences),
-	plans: many(() => import('./monthly-plans').monthlyPlans),
-	quota: many(() => import('./generation-quota').generationQuota),
-	history: many(() => import('./user-activity-history').userActivityHistory),
-	insights: many(() => import('./user-productivity-insights').userProductivityInsights),
+	userGoalsAndPreferences: many(userGoalsAndPreferences),
+	monthlyPlans: many(monthlyPlans),
+	generationQuota: many(generationQuota),
+	userActivityHistory: many(userActivityHistory),
+	userProductivityInsights: many(userProductivityInsights),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

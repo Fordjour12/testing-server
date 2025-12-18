@@ -4,7 +4,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 
-export const Route = createFileRoute('/hello')({
+export const Route = createFileRoute('/(dashboarding)/hello')({
   server: {
     handlers: {
       POST: async ({ request }) => {
