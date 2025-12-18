@@ -9,6 +9,9 @@ export async function createMonthlyPlan(data: {
   aiPrompt: string;
   aiResponseRaw: any;
   monthlySummary: string;
+  rawAiResponse?: string;
+  extractionConfidence?: number;
+  extractionNotes?: string;
 }) {
   const [newPlan] = await db.insert(monthlyPlans)
     .values(data)

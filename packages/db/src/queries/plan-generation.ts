@@ -4,11 +4,11 @@ import { userProductivityInsights } from "../schema";
 import {
    getCurrentQuota,
    decrementGenerationQuota,
-   incrementGenerationQuota,
    getGoalPreferenceById,
    createMonthlyPlan,
    createPlanTasks
 } from "./index";
+import { responseExtractor, processAIResponse, createDefaultTasks } from "@testing-server/api";
 
 export async function preparePlanGeneration(preferenceId: number, userId: string) {
    try {
@@ -56,26 +56,68 @@ export async function saveGeneratedPlan(
    preferenceId: number,
    monthYear: string,
    aiPrompt: string,
-   aiResponse: any
+   aiResponse: { rawContent: string; metadata: { contentLength: number; format: 'json' | 'text' | 'mixed' } }
 ) {
    try {
-      // Parse JSON response & extract summary
-      const monthlySummary = extractSummary(aiResponse);
+      console.log(`Saving generated plan for user ${userId}, response format: ${aiResponse.metadata.format}`);
 
-      // Insert full response into monthlyPlans
+      // Use response extractor to safely extract structured data
+      const extractedData = processAIResponse(aiResponse);
+
+      // Get monthly summary (fallback to extracted summary or generate one)
+      const monthlySummary = extractedData.structuredData.monthly_summary ||
+         responseExtractor.extractMonthlySummary(aiResponse.rawContent);
+
+      // Insert full response into monthlyPlans with extraction metadata
       const newPlan = await createMonthlyPlan({
          userId,
          preferenceId,
          monthYear,
          aiPrompt,
-         aiResponseRaw: aiResponse,
-         monthlySummary
+         aiResponseRaw: extractedData.structuredData, // Store extracted structured data
+         monthlySummary,
+         rawAiResponse: aiResponse.rawContent, // Store raw response
+         extractionConfidence: extractedData.metadata.confidence,
+         extractionNotes: extractedData.metadata.extractionNotes
       });
 
       // Extract tasks and bulk insert into planTasks
-      const tasks = extractTasksFromResponse(aiResponse, newPlan?.id || 0);
+      let tasks: Array<{
+         planId: number;
+         taskDescription: string;
+         focusArea: string;
+         startTime: Date;
+         endTime: Date;
+         difficultyLevel: 'simple' | 'moderate' | 'advanced';
+         schedulingReason: string;
+         isCompleted: boolean;
+      }> = [];
+
+      if (extractedData.structuredData.weekly_breakdown) {
+         const taskData = responseExtractor.extractTasksFromBreakdown(extractedData.structuredData.weekly_breakdown);
+
+         tasks = taskData.map(task => ({
+            planId: newPlan?.id || 0,
+            taskDescription: task.title,
+            focusArea: task.category,
+            startTime: new Date(task.dueDate + 'T09:00:00Z'), // Use 9 AM as default start time
+            endTime: new Date(task.dueDate + `T${9 + (task.estimatedHours || 2)}:00:00Z`), // Add estimated hours
+            difficultyLevel: task.priority === 'High' ? 'advanced' :
+               task.priority === 'Medium' ? 'moderate' : 'simple',
+            schedulingReason: task.description || `Scheduled task for ${task.dayOfWeek || 'unknown day'}`,
+            isCompleted: false
+         }));
+      }
+
+      // If no tasks were extracted, create default tasks based on summary
+      if (tasks.length === 0) {
+         console.warn('No tasks extracted from AI response, creating default tasks');
+         tasks = createDefaultTasks(newPlan?.id || 0);
+      }
+
       if (tasks.length > 0) {
          await createPlanTasks(tasks);
+         console.log(`Created ${tasks.length} tasks for plan ${newPlan?.id}`);
       }
 
       return newPlan?.id || 0;
@@ -192,56 +234,8 @@ function constructAIPrompt(preferences: any, insights: any[], currentDate: Date,
 }
 
 
-function extractSummary(aiResponse: any): string {
-   return aiResponse.monthly_summary || '';
-}
 
-function extractTasksFromResponse(aiResponse: any, planId: number): Array<{
-   planId: number;
-   taskDescription: string;
-   focusArea: string;
-   startTime: Date;
-   endTime: Date;
-   difficultyLevel: 'simple' | 'moderate' | 'advanced';
-   schedulingReason: string;
-   isCompleted: boolean;
-}> {
-   const tasks: Array<{
-      planId: number;
-      taskDescription: string;
-      focusArea: string;
-      startTime: Date;
-      endTime: Date;
-      difficultyLevel: 'simple' | 'moderate' | 'advanced';
-      schedulingReason: string;
-      isCompleted: boolean;
-   }> = [];
 
-   if (aiResponse.weekly_breakdown) {
-      aiResponse.weekly_breakdown.forEach((week: any) => {
-         if (week.daily_tasks) {
-            Object.values(week.daily_tasks).forEach((dayTasks: any) => {
-               if (Array.isArray(dayTasks)) {
-                  dayTasks.forEach((task: any) => {
-                     tasks.push({
-                        planId,
-                        taskDescription: task.task_description,
-                        focusArea: task.focus_area,
-                        startTime: new Date(task.start_time),
-                        endTime: new Date(task.end_time),
-                        difficultyLevel: task.difficulty_level,
-                        schedulingReason: task.scheduling_reason,
-                        isCompleted: false
-                     });
-                  });
-               }
-            });
-         }
-      });
-   }
-
-   return tasks;
-}
 
 export async function failPlanGeneration(planId: number, errorMessage: string) {
    try {

@@ -5,7 +5,7 @@ import {
    logActivityWithDetails,
    recalculateInsights as recalculateInsightsQuery
 } from '@testing-server/db';
-import { getOpenRouterService } from '../lib/openrouter';
+import { getOpenRouterService, handleAIServiceFailure } from '@testing-server/api';
 import { type Variables } from "../index"
 
 
@@ -23,16 +23,10 @@ servicesRouter.post('/generate', async (c) => {
       // Prepare plan generation (checks quota, fetches user data)
       const planData = await preparePlanGeneration(preferenceId, userId);
 
-      let aiResponse;
-
-      // Call OpenRouter API with fallback to mock data
-      if (!process.env.OPENROUTER_API_KEY) {
-         console.log('OpenRouter API key not configured, using mock data');
-         throw new Error('OpenRouter API key not configured');
-      }
-
+      // Call OpenRouter API
       const openRouterService = getOpenRouterService();
-      aiResponse = await openRouterService.generatePlan(planData.prompt);
+      const aiResponse = await openRouterService.generatePlan(planData.prompt);
+      console.log(`OpenRouter response received, format: ${aiResponse.metadata.format}`);
 
 
       // Save the generated plan to the database
@@ -54,7 +48,7 @@ servicesRouter.post('/generate', async (c) => {
       console.error('Error generating plan:', error);
       return c.json({
          success: false,
-         error: error instanceof Error ? error.message : 'Failed to generate plan'
+         error: handleAIServiceFailure(error).message
       }, 500);
    }
 });
@@ -110,3 +104,5 @@ servicesRouter.post('/recalculate-insights', async (c) => {
       }, 500);
    }
 });
+
+

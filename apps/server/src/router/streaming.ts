@@ -5,7 +5,7 @@ import {
   saveGeneratedPlan,
   failPlanGeneration
 } from '@testing-server/db';
-import { getOpenRouterService } from '../lib/openrouter';
+import { getOpenRouterService, responseExtractor, handleAIServiceFailure } from '@testing-server/api';
 
 export const streamingRouter = new Hono();
 
@@ -45,25 +45,6 @@ streamingRouter.post('/generate-plan', async (c) => {
       let aiResponse: any;
 
       // Try OpenRouter API (simulated streaming via SSE)
-      if (!process.env.OPENROUTER_API_KEY) {
-        // Send error event via SSE
-        await stream.writeSSE({
-          data: JSON.stringify({
-            type: 'error',
-            error: 'OpenRouter API key not configured. Please set OPENROUTER_API_KEY environment variable.',
-            planId
-          }),
-          event: 'error',
-          id: String(planId)
-        });
-
-        // Mark plan as failed in database
-        if (planId) {
-          await failPlanGeneration(planId, 'OpenRouter API key not configured');
-        }
-        return;
-      }
-
       try {
         const openRouterService = getOpenRouterService();
 
@@ -71,9 +52,9 @@ streamingRouter.post('/generate-plan', async (c) => {
         await stream.writeSSE({
           data: JSON.stringify({
             type: 'progress',
-            content: 'Generating plan...',
+            content: 'Initializing plan generation...',
             progress: {
-              status: 'Calling OpenRouter API'
+              status: 'Setting up OpenRouter connection'
             }
           }),
           event: 'progress',
@@ -81,31 +62,37 @@ streamingRouter.post('/generate-plan', async (c) => {
         });
 
         // Generate plan using the existing non-streaming method
-        aiResponse = await openRouterService.generatePlan(planData.prompt);
+        const rawAiResponse = await openRouterService.generatePlan(planData.prompt);
+
+        // Extract structured data for streaming response
+        const extractedData = responseExtractor.extractAllStructuredData(rawAiResponse.rawContent);
 
         // Send completion progress event
         await stream.writeSSE({
           data: JSON.stringify({
             type: 'content',
-            content: JSON.stringify(aiResponse),
+            content: rawAiResponse.rawContent,
             progress: {
-              monthly_summary: aiResponse.monthly_summary,
-              weekly_breakdown_complete: aiResponse.weekly_breakdown?.length || 0
+              monthly_summary: extractedData.structuredData.monthly_summary,
+              weekly_breakdown_complete: extractedData.structuredData.weekly_breakdown?.length || 0,
+              extraction_confidence: extractedData.metadata.confidence
             },
             isComplete: true
           }),
           event: 'progress',
           id: String(planId)
         });
-      } catch (error) {
-        const errorMessage = `Failed to generate plan with OpenRouter API: ${error instanceof Error ? error.message : 'Unknown error'}`;
-        console.error('OpenRouter API error:', error);
+
+        // Update aiResponse for database storage
+        aiResponse = rawAiResponse;
+      } catch (openRouterError) {
+        console.error('OpenRouter API call failed in streaming:', openRouterError);
 
         // Send error event via SSE
         await stream.writeSSE({
           data: JSON.stringify({
             type: 'error',
-            error: errorMessage,
+            error: handleAIServiceFailure(openRouterError).message,
             planId
           }),
           event: 'error',
@@ -114,7 +101,7 @@ streamingRouter.post('/generate-plan', async (c) => {
 
         // Mark plan as failed in database
         if (planId) {
-          await failPlanGeneration(planId, errorMessage);
+          await failPlanGeneration(planId, handleAIServiceFailure(openRouterError).message);
         }
         return;
       }

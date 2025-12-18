@@ -1,0 +1,37 @@
+{
+  "name": "@testing-server/api",
+  "version": "1.0.0",
+  "description": "API package for plan generation and AI response handling",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "api",
+    "ai",
+    "plan-generation",
+    "response-extraction"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@openrouter/sdk": "^0.2.11",
+    "hono": "^4.8.2",
+    "@hono/zod-validator": "^0.2.2",
+    "zod": "catalog:",
+    "@testing-server/db": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  }
+}

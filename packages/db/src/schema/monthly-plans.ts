@@ -21,6 +21,9 @@ export const monthlyPlans = pgTable('monthly_plans', {
   aiPrompt: text('ai_prompt').notNull(), // Role: Stores the full context/prompt for debugging and audit.
   aiResponseRaw: jsonb('ai_response_raw').notNull(), // Role: Stores the full JSON output from the AI (including weekly_breakdown, etc.).
   monthlySummary: text('monthly_summary'), // Extracted for easy display.
+  rawAiResponse: text('raw_ai_response'), // Store complete AI response as text for robust extraction
+  extractionConfidence: integer('extraction_confidence').default(0), // Quality score (0-100)
+  extractionNotes: text('extraction_notes'), // Processing metadata and notes
 
   generatedAt: timestamp('generated_at').notNull().defaultNow(),
 });
