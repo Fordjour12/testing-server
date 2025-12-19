@@ -170,10 +170,10 @@ function RouteComponent() {
             </div>
          </header>
 
-         {/* Main Content with Flex Layout */}
-         <main className={`container mx-auto px-4 py-8 ${hasGenerated ? 'lg:flex lg:gap-8' : 'max-w-4xl'}`}>
-            {/* Form Section - Left side on desktop, full width on mobile */}
-            <div className={`${hasGenerated ? 'lg:flex-1' : ''}`}>
+          {/* Main Content with Flex Layout */}
+          <main className={`container mx-auto px-4 py-8 ${(isGenerating || hasGenerated) ? 'lg:flex lg:gap-8' : 'max-w-4xl'}`}>
+             {/* Form Section - Left side on desktop, full width on mobile */}
+             <div className={`${(isGenerating || hasGenerated) ? 'lg:flex-1' : ''}`}>
                <Example title='Generate AI Plan (TanStack Forms)' about="Create a personalized monthly plan with AI assistance using TanStack Forms">
                   <form
                      onSubmit={(e) => {
@@ -501,19 +501,19 @@ function RouteComponent() {
                </Example>
             </div>
 
-            {/* AI Response Section - Right side on desktop, below form on mobile */}
-            {hasGenerated && (
-               <div className="lg-100 lg:sticky lg:top-8 lg:h-fit">
-                  <AIPlanResponse
-                     isLoading={isGenerating}
-                     error={error}
-                     plan={generatedPlan}
-                     onRegenerate={handleRegenerate}
-                     onSave={handleSave}
-                     onViewFull={handleViewFull}
-                  />
-               </div>
-            )}
+             {/* AI Response Section - Right side on desktop, below form on mobile */}
+             {(isGenerating || hasGenerated) && (
+                <div className="lg:flex-1 lg:sticky lg:top-8 lg:h-fit">
+                   <AIPlanResponse
+                      isLoading={isGenerating}
+                      error={error}
+                      plan={generatedPlan}
+                      onRegenerate={handleRegenerate}
+                      onSave={handleSave}
+                      onViewFull={handleViewFull}
+                   />
+                </div>
+             )}
          </main>
       </div>
    )

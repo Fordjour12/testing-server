@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import {
    getStagingPlan,
+   getUserStagingPlans,
    markStagingPlanAsSaved,
    deleteStagingPlan,
    saveGeneratedPlan,
@@ -11,6 +12,34 @@ import {
 import type { Variables } from '../index';
 
 export const stagingRouter = new Hono<{ Variables: Variables }>();
+
+// GET /api/staging - Get all staging plans for current user
+stagingRouter.get('/', async (c) => {
+   try {
+      const user = c.get('session')?.user?.id;
+      const userId = c.req.header('X-User-ID') || user
+
+      if (!userId) {
+         return c.json({
+            success: false,
+            error: 'User authentication required'
+         }, 401);
+      }
+
+      const plans = await getUserStagingPlans(userId);
+
+      return c.json({
+         success: true,
+         data: plans
+      });
+   } catch (error) {
+      console.error('Error fetching staging plans:', error);
+      return c.json({
+         success: false,
+         error: 'Failed to fetch staging plans'
+      }, 500);
+   }
+});
 
 // GET /api/staging/:stagingKey - Get staged plan for preview
 stagingRouter.get('/:stagingKey', async (c) => {
@@ -89,7 +118,7 @@ stagingRouter.post('/:stagingKey/save', zValidator('json', z.object({
          stagingPlan.preferencesId!,
          stagingPlan.monthYear,
          '', // prompt - could be retrieved if needed
-         stagingPlan.aiResponseRaw
+         stagingPlan.aiResponseRaw as { rawContent: string; metadata: { contentLength: number; format: 'json' | 'text' | 'mixed' } }
       );
 
       if (!planId) {

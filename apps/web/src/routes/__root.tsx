@@ -4,7 +4,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ThemeProvider } from '@/components/theme-provider'
 import { NotFound } from '@/components/NotFound'
 import { Button } from '@/components/ui/button'
-import { Zap, Home, User, LogOut } from 'lucide-react'
+import { Zap, Home, User, LogOut, Target } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 import { useState, useEffect } from 'react'
 
@@ -109,6 +109,14 @@ function Navigation() {
                            <Zap className="h-4 w-4" />
                            Tokens
                         </Link>
+                        <Link
+                           to="/plans"
+                           className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted transition-colors"
+                        >
+                           <Target className="h-4 w-4" />
+                           Plans
+                        </Link>
+
                      </div>
                   )}
                </div>

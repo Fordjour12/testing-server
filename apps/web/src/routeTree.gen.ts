@@ -13,6 +13,7 @@ import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TokenIndexRouteImport } from './routes/token/index'
+import { Route as PlansIndexRouteImport } from './routes/plans/index'
 import { Route as TokenRequestRouteImport } from './routes/token/request'
 import { Route as TokenHistoryRouteImport } from './routes/token/history'
 import { Route as dashboardingTestMockRouteImport } from './routes/(dashboarding)/test-mock'
@@ -20,6 +21,7 @@ import { Route as dashboardingTasksRouteImport } from './routes/(dashboarding)/t
 import { Route as dashboardingHelloRouteImport } from './routes/(dashboarding)/hello'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authLoginRouteImport } from './routes/(auth)/login'
+import { Route as PlansPlansIndexRouteImport } from './routes/plans/$plans/index'
 
 const GenerateRoute = GenerateRouteImport.update({
   id: '/generate',
@@ -39,6 +41,11 @@ const IndexRoute = IndexRouteImport.update({
 const TokenIndexRoute = TokenIndexRouteImport.update({
   id: '/token/',
   path: '/token/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlansIndexRoute = PlansIndexRouteImport.update({
+  id: '/plans/',
+  path: '/plans/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TokenRequestRoute = TokenRequestRouteImport.update({
@@ -76,6 +83,11 @@ const authLoginRoute = authLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlansPlansIndexRoute = PlansPlansIndexRouteImport.update({
+  id: '/plans/$plans/',
+  path: '/plans/$plans/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -88,7 +100,9 @@ export interface FileRoutesByFullPath {
   '/test-mock': typeof dashboardingTestMockRoute
   '/token/history': typeof TokenHistoryRoute
   '/token/request': typeof TokenRequestRoute
+  '/plans': typeof PlansIndexRoute
   '/token': typeof TokenIndexRoute
+  '/plans/$plans': typeof PlansPlansIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -101,7 +115,9 @@ export interface FileRoutesByTo {
   '/test-mock': typeof dashboardingTestMockRoute
   '/token/history': typeof TokenHistoryRoute
   '/token/request': typeof TokenRequestRoute
+  '/plans': typeof PlansIndexRoute
   '/token': typeof TokenIndexRoute
+  '/plans/$plans': typeof PlansPlansIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -115,7 +131,9 @@ export interface FileRoutesById {
   '/(dashboarding)/test-mock': typeof dashboardingTestMockRoute
   '/token/history': typeof TokenHistoryRoute
   '/token/request': typeof TokenRequestRoute
+  '/plans/': typeof PlansIndexRoute
   '/token/': typeof TokenIndexRoute
+  '/plans/$plans/': typeof PlansPlansIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -130,7 +148,9 @@ export interface FileRouteTypes {
     | '/test-mock'
     | '/token/history'
     | '/token/request'
+    | '/plans'
     | '/token'
+    | '/plans/$plans'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -143,7 +163,9 @@ export interface FileRouteTypes {
     | '/test-mock'
     | '/token/history'
     | '/token/request'
+    | '/plans'
     | '/token'
+    | '/plans/$plans'
   id:
     | '__root__'
     | '/'
@@ -156,7 +178,9 @@ export interface FileRouteTypes {
     | '/(dashboarding)/test-mock'
     | '/token/history'
     | '/token/request'
+    | '/plans/'
     | '/token/'
+    | '/plans/$plans/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -170,7 +194,9 @@ export interface RootRouteChildren {
   dashboardingTestMockRoute: typeof dashboardingTestMockRoute
   TokenHistoryRoute: typeof TokenHistoryRoute
   TokenRequestRoute: typeof TokenRequestRoute
+  PlansIndexRoute: typeof PlansIndexRoute
   TokenIndexRoute: typeof TokenIndexRoute
+  PlansPlansIndexRoute: typeof PlansPlansIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -201,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/token'
       fullPath: '/token'
       preLoaderRoute: typeof TokenIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plans/': {
+      id: '/plans/'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof PlansIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/token/request': {
@@ -252,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/plans/$plans/': {
+      id: '/plans/$plans/'
+      path: '/plans/$plans'
+      fullPath: '/plans/$plans'
+      preLoaderRoute: typeof PlansPlansIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -266,7 +306,9 @@ const rootRouteChildren: RootRouteChildren = {
   dashboardingTestMockRoute: dashboardingTestMockRoute,
   TokenHistoryRoute: TokenHistoryRoute,
   TokenRequestRoute: TokenRequestRoute,
+  PlansIndexRoute: PlansIndexRoute,
   TokenIndexRoute: TokenIndexRoute,
+  PlansPlansIndexRoute: PlansPlansIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { currentApiBaseUrl } from '@/lib/api-utils'
 import { authMiddleware } from '@/middleware/auth'
+import { pl } from 'zod/v4/locales'
 
 // Types matching the backend schema
 export type Priority = 'High' | 'Medium' | 'Low'
@@ -87,7 +88,31 @@ export const generatePlanServerFn = createServerFn({ method: 'POST' })
       const planResult = await planResponse.json()
 
       if (!planResult.success || !planResult.data) {
-         throw new Error('No plan data available')
+         console.log('No plan data available')
+      }
+
+      console.log("planResult", planResult)
+
+      // If we got staging data, fetch the actual plan from staging endpoint
+      if (planResult.data.stagingKey) {
+         const stagingResponse = await fetch(`${currentApiBaseUrl}/api/staging/${planResult.data.stagingKey}`, {
+            method: 'GET',
+            headers: {
+               'Content-Type': 'application/json',
+            }
+         })
+
+         if (!stagingResponse.ok) {
+            const errorData = await stagingResponse.json()
+            throw new Error(errorData.error || 'Failed to fetch staged plan')
+         }
+
+         const stagingResult = await stagingResponse.json()
+         if (!stagingResult.success || !stagingResult.data) {
+            throw new Error('No staged plan data available')
+         }
+
+         return stagingResult.data.planData as MonthlyPlan
       }
 
       return planResult.data as MonthlyPlan

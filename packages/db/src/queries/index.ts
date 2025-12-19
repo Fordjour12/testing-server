@@ -9,3 +9,4 @@ export * from './productivity-insights';
 export * from './plan-generation';
 export * from './activity-logging';
 export * from './insights-analysis';
+export * from './plan-staging';

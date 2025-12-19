@@ -27,7 +27,7 @@ function getApiBaseUrl(): string {
 
     // Development fallback
     if (import.meta.env?.DEV) {
-      return 'http://localhost:3000'
+      return 'http://localhost:3002'
     }
 
     // Production fallback - use current origin

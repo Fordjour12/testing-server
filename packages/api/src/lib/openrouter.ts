@@ -1,4 +1,5 @@
 import { OpenRouter } from '@openrouter/sdk';
+import { insertAiRequestLog } from '@testing-server/db/queries/ai-log-activity';
 
 export interface OpenRouterConfig {
    apiKey: string;
@@ -50,6 +51,9 @@ export class OpenRouterService {
          if (typeof content !== 'string') {
             throw new Error('Response content is not a string');
          }
+
+         await insertAiRequestLog(content)
+         console.log("done logging content")
 
          // Detect response format
          const format = this.detectResponseFormat(content);
