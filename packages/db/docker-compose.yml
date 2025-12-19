@@ -5,7 +5,7 @@ services:
     image: postgres
     container_name: testing-server-postgres
     environment:
-      POSTGRES_DB: testing-server
+      POSTGRES_DB: testing-server-1
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:

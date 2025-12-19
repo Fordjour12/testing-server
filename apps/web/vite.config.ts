@@ -18,6 +18,9 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
+  server: {
+    port: 5173,
+  },
 })
 
 export default config

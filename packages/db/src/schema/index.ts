@@ -11,3 +11,4 @@ export * from "./monthly-plans";
 export * from "./plan-tasks";
 export * from "./user-activity-history";
 export * from "./user-productivity-insights";
+export * from "./ai-request-logs";

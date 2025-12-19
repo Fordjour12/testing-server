@@ -46,7 +46,8 @@
     "vite-tsconfig-paths": "^5.1.4",
     "zod": "catalog:",
     "better-auth": "catalog:",
-    "@testing-server/auth": "workspace:*"
+    "@testing-server/auth": "workspace:*",
+    "@testing-server/response-parser": "workspace:*"
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "^0.3.12",

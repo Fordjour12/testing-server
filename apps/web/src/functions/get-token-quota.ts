@@ -1,3 +1,4 @@
+import { currentApiBaseUrl } from "@/lib/api-utils";
 import { authMiddleware } from "@/middleware/auth";
 import { createServerFn } from "@tanstack/react-start";
 
@@ -25,7 +26,7 @@ export const getTokenQuota = createServerFn({ method: "GET" })
          const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 
          // Call the quota API endpoint
-         const response = await fetch(`${process.env.VITE_API_URL || 'http://localhost:3000'}/api/quota/current`, {
+         const response = await fetch(`${currentApiBaseUrl}/api/quota/current`, {
             method: 'GET',
             headers: {
                'Content-Type': 'application/json',
