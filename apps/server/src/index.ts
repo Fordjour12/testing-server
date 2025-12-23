@@ -3,7 +3,7 @@ import { auth } from "@testing-server/auth";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { planRouter, servicesRouter, streamingRouter, mockRouter, quotaRouter } from "./router";
+import { planRouter, servicesRouter, calendarRouter, streamingRouter, mockRouter, quotaRouter } from "./router";
 import { createContext, type Context } from "./lib/context";
 
 
@@ -35,6 +35,7 @@ app.use("/*", async (c, next) => {
 // API Routes
 app.route("/api/plan", planRouter);
 app.route("/service", servicesRouter);
+app.route("/api/calendar", calendarRouter);
 app.route("/api/streaming", streamingRouter);
 app.route("/api/mock", mockRouter);
 app.route("/api/quota", quotaRouter);

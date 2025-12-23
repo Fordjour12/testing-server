@@ -5,7 +5,7 @@ import {
   saveGeneratedPlan,
   failPlanGeneration
 } from '@testing-server/db';
-import { getOpenRouterService, responseExtractor, handleAIServiceFailure } from '@testing-server/api';
+import { getOpenRouterService, responseExtractor } from '@testing-server/api';
 
 export const streamingRouter = new Hono();
 
@@ -87,12 +87,13 @@ streamingRouter.post('/generate-plan', async (c) => {
         aiResponse = rawAiResponse;
       } catch (openRouterError) {
         console.error('OpenRouter API call failed in streaming:', openRouterError);
+        const errorMessage = openRouterError instanceof Error ? openRouterError.message : 'Unknown error';
 
         // Send error event via SSE
         await stream.writeSSE({
           data: JSON.stringify({
             type: 'error',
-            error: handleAIServiceFailure(openRouterError).message,
+            error: errorMessage,
             planId
           }),
           event: 'error',
@@ -101,7 +102,7 @@ streamingRouter.post('/generate-plan', async (c) => {
 
         // Mark plan as failed in database
         if (planId) {
-          await failPlanGeneration(planId, handleAIServiceFailure(openRouterError).message);
+          await failPlanGeneration(planId, errorMessage);
         }
         return;
       }

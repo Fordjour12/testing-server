@@ -56,7 +56,7 @@ function generateMockPlan(data: any, planId: string) {
     id: planId,
     title: `${data.month || new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} Plan`,
     month: data.month || new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-    goals: data.goals ? data.goals.split('\n').filter(goal => goal.trim().length > 0) : [],
+    goals: data.goals ? data.goals.split('\n').filter((goal: string) => goal.trim().length > 0) : [],
     tasks,
     totalTasks: tasks.length,
     estimatedHours: tasks.reduce((sum, task) => sum + (task.estimatedHours || 0), 0),

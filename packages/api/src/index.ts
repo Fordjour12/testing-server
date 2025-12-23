@@ -36,3 +36,4 @@ export type {
 // Export routers
 export { planRouter } from './routers/plan';
 export { servicesRouter } from './routers/services';
+export { calendarRouter } from './routers/calendar';

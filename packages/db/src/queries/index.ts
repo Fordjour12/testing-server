@@ -11,3 +11,4 @@ export * from './plan-generation';
 export * from './activity-logging';
 export * from './insights-analysis';
 export * from './ai-request-logs';
+export * from './calendar';
