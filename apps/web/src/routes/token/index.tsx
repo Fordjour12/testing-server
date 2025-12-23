@@ -187,7 +187,7 @@ function RouteComponent() {
                                  })}
                               </p>
                            </div>
-                           <Link to="/tokens/request">
+                           <Link to="/token/request">
                               <Button className="w-full">
                                  Request More Tokens
                               </Button>

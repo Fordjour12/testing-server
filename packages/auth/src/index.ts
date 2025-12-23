@@ -9,14 +9,15 @@ export const auth = betterAuth({
 
 		schema: schema,
 	}),
-	trustedOrigins: [process.env.CORS_ORIGIN || ""],
+	baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+	trustedOrigins: [process.env.CORS_ORIGIN || "http://localhost:5173"],
 	emailAndPassword: {
 		enabled: true,
 	},
 	advanced: {
 		defaultCookieAttributes: {
-			sameSite: "none",
-			secure: true,
+			sameSite: process.env.NODE_ENV === 'production' ? "none" : "lax",
+			secure: process.env.NODE_ENV === 'production',
 			httpOnly: true,
 		},
 	},

@@ -19,7 +19,8 @@
     "@hono/zod-validator": "^0.7.5",
     "zod": "catalog:",
     "@testing-server/db": "workspace:*",
-    "@testing-server/types": "workspace:*"
+    "@testing-server/types": "workspace:*",
+    "@testing-server/response-parser": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",

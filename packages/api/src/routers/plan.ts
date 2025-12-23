@@ -6,14 +6,26 @@ import {
    getLatestGoalPreference,
    getCurrentMonthlyPlanWithTasks,
    updateTaskStatus as updateTaskStatusQuery,
-   logActivity as logActivityQuery
+   logActivity as logActivityQuery,
+   saveGeneratedPlan
 } from '@testing-server/db';
 
-export const planRouter = new Hono();
+// Type for session context
+type Variables = {
+   session: {
+      user: {
+         id: string;
+      } | null;
+      session: {
+         token: string;
+      } | null;
+   } | null;
+}
+
+export const planRouter = new Hono<{ Variables: Variables }>();
 
 // Zod schemas for validation
 const createPlanInputSchema = z.object({
-   userId: z.string(),
    goalsText: z.string().min(1),
    taskComplexity: z.enum(['Simple', 'Balanced', 'Ambitious']),
    focusAreas: z.string().min(1),
@@ -42,12 +54,46 @@ planRouter.get('/', async (c) => {
 planRouter.post('/inputs', zValidator('json', createPlanInputSchema), async (c) => {
    try {
       const data = c.req.valid('json');
+      const session = c.get('session');
+      let userId: string;
 
-      console.log("data user sent to server data", data)
+      // Try to get userId from session context first (normal browser requests)
+      if (session?.user?.id) {
+         userId = session.user.id;
+         console.log("Using userId from session context:", userId);
+      } else {
+         // Try to get userId from Authorization header (for server-to-server calls)
+         const authHeader = c.req.header('Authorization');
+         if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.slice(7);
+            console.log("Found Authorization header with token:", token.substring(0, 10) + "...");
+            
+            // For server-to-server calls from our own server function,
+            // we'll temporarily extract user ID from a custom header
+            const userIdHeader = c.req.header('X-User-ID');
+            if (userIdHeader) {
+               userId = userIdHeader;
+               console.log("Using userId from X-User-ID header:", userId);
+            } else {
+               return c.json({
+                  success: false,
+                  error: 'User ID required for server-to-server calls'
+               }, 400);
+            }
+         } else {
+            console.error('Authentication failed - no session or Authorization header found:', { session: !!session, hasAuthHeader: !!authHeader });
+            return c.json({
+               success: false,
+               error: 'Authentication required'
+            }, 401);
+         }
+      }
+
+      console.log("data user sent to server data", { ...data, userId })
 
       // 1. Insert into userGoalsAndPreferences table
       const newPreference = await createGoalPreference({
-         userId: data.userId,
+         userId,
          goalsText: data.goalsText,
          taskComplexity: data.taskComplexity,
          focusAreas: data.focusAreas,
@@ -63,7 +109,7 @@ planRouter.post('/inputs', zValidator('json', createPlanInputSchema), async (c) 
       }
 
       // 2. Trigger AI Plan Generation via internal service call
-      // This is the proper architecture: public API → internal service
+      // This is proper architecture: public API → internal service
       try {
          // Make internal HTTP call to /service/generate
          const baseUrl = process.env.API_BASE_URL;
@@ -74,24 +120,25 @@ planRouter.post('/inputs', zValidator('json', createPlanInputSchema), async (c) 
             },
             body: JSON.stringify({
                preferenceId: newPreference.id,
-               userId: data.userId
+               userId
             })
          });
 
-         const result = await response.json() as { success?: boolean; error?: string; planId?: number };
-         console.log("result", result)
+const result = await response.json() as { success?: boolean; error?: string; planId?: number; data?: any };
+          console.log("result", result)
 
-         if (!response.ok || !result.success) {
-            throw new Error(result.error || 'Failed to generate plan');
-         }
+          if (!response.ok || !result.success) {
+             throw new Error(result.error || 'Failed to generate plan');
+          }
 
-         // 3. Return success response with plan ID
-         return c.json({
-            success: true,
-            preferenceId: newPreference.id,
-            planId: result.planId,
-            message: 'Planning inputs saved and plan generated successfully'
-         });
+          // 3. Return success response with full AI response data
+          return c.json({
+             success: true,
+             preferenceId: newPreference.id,
+             planId: result.planId,
+             data: result.data, // Include the actual AI response data
+             message: 'Planning inputs saved and plan generated successfully'
+          });
       } catch (generationError) {
          console.error('Error during plan generation:', generationError);
          // Still return success for saving preferences, but note generation failed
@@ -112,7 +159,6 @@ planRouter.post('/inputs', zValidator('json', createPlanInputSchema), async (c) 
    }
 });
 
-
 // POST /api/plan/save - Server function for saving plans
 planRouter.post('/save', zValidator('json', z.object({
    planId: z.string()
@@ -121,7 +167,7 @@ planRouter.post('/save', zValidator('json', z.object({
       const { planId } = c.req.valid('json');
 
       // In a real implementation, you might update a "saved" flag or perform additional save operations
-      // For now, we'll just log the save action since plans are already saved in the database
+      // For now, we'll just log save action since plans are already saved in the database
       console.log(`Plan ${planId} save action completed via server function`);
 
       return c.json({
@@ -138,15 +184,76 @@ planRouter.post('/save', zValidator('json', z.object({
    }
 });
 
+// POST /api/plan/save-parsed - Save parsed AI response to database (Approach 1: Direct Response)
+const saveParsedPlanSchema = z.object({
+   preferenceId: z.number(),
+   monthYear: z.string(),
+   aiResponse: z.any(), // AIResponseWithMetadata
+   monthlyPlan: z.any() // MonthlyPlan
+});
+
+planRouter.post('/save-parsed', zValidator('json', saveParsedPlanSchema), async (c) => {
+   try {
+      const session = c.get('session');
+
+      if (!session?.user?.id) {
+         console.error('Authentication failed - no user session found:', session);
+         return c.json({
+            success: false,
+            error: 'Authentication required'
+         }, 401);
+      }
+
+      const userId = session.user.id;
+      const { preferenceId, monthYear, aiResponse } = c.req.valid('json');
+
+      // Convert MonthlyPlan back to AI response format for database storage
+      const aiResponseForDB = {
+         rawContent: aiResponse.rawContent,
+         metadata: aiResponse.metadata
+      };
+
+      // Save the generated plan to the database using existing logic
+      const planId = await saveGeneratedPlan(
+         userId,
+         preferenceId,
+         monthYear,
+         '', // prompt - we don't have it in this flow, could be passed if needed
+         aiResponseForDB
+      );
+
+      if (!planId) {
+         return c.json({
+            success: false,
+            error: 'Failed to save plan to database'
+         }, 500);
+      }
+
+      return c.json({
+         success: true,
+         planId,
+         message: 'Parsed plan saved successfully to database'
+      });
+
+   } catch (error) {
+      console.error('Error saving parsed plan:', error);
+      return c.json({
+         success: false,
+         error: error instanceof Error ? error.message : 'Failed to save parsed plan'
+      }, 500);
+   }
+});
 
 // GET /api/plan/inputs/latest - Get latest planning inputs for a user
 planRouter.get('/inputs/latest', async (c) => {
    try {
-      const userId = c.req.query('userId');
-      if (!userId) {
-         return c.json({ error: 'userId is required' }, 400);
+      const session = c.get('session');
+
+      if (!session?.user?.id) {
+         return c.json({ error: 'Authentication required' }, 401);
       }
 
+      const userId = session.user.id;
       const latestPreference = await getLatestGoalPreference(userId);
 
       if (!latestPreference) {
@@ -167,11 +274,13 @@ planRouter.get('/inputs/latest', async (c) => {
 // GET /api/plan/current - Get the active monthly plan
 planRouter.get('/current', async (c) => {
    try {
-      const userId = c.req.query('userId');
-      if (!userId) {
-         return c.json({ error: 'userId is required' }, 400);
+      const session = c.get('session');
+
+      if (!session?.user?.id) {
+         return c.json({ error: 'Authentication required' }, 401);
       }
 
+      const userId = session.user.id;
       const currentDate = new Date();
       const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
 

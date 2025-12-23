@@ -20,10 +20,17 @@ import {
    SelectTrigger,
    SelectValue,
 } from '@/components/ui/select'
-import { AIPlanResponse } from '@/components/ai-plan-response'
+import { DirectPlanDisplay } from '@/components/direct-plan-display'
+import { ParsingStatus } from '@/components/parsing-status'
+import { PlanEditor } from '@/components/plan-editor'
 import { Example } from '@/components/example'
 import { useForm, type AnyFieldApi } from '@tanstack/react-form'
-import { generatePlanServerFn, GeneratePlanFormDataSchema, type MonthlyPlan } from '@/functions/generate-server-fn'
+import {
+   generatePlanServerFn,
+   GeneratePlanFormDataSchema,
+   type GeneratePlanResponse,
+   type MonthlyPlan
+} from '@/functions/generate-server-fn'
 import { authClient } from '@/lib/auth-client'
 import { NotFound } from '@/components/NotFound'
 
@@ -51,14 +58,16 @@ export const Route = createFileRoute('/generate')({
 function RouteComponent() {
    const [isGenerating, setIsGenerating] = useState(false)
    const [hasGenerated, setHasGenerated] = useState(false)
-   const [generatedPlan, setGeneratedPlan] = useState<MonthlyPlan | undefined>(undefined)
+   const [isEditing, setIsEditing] = useState(false)
+   const [isParsing, setIsParsing] = useState(false)
+   const [generateResponse, setGenerateResponse] = useState<GeneratePlanResponse | undefined>(undefined)
+   const [editedPlan, setEditedPlan] = useState<MonthlyPlan | undefined>(undefined)
    const [error, setError] = useState<string | undefined>()
 
-   const { data } = authClient.useSession()
+   authClient.useSession()
 
    const form = useForm({
       defaultValues: {
-         userId: String(data?.user.id),
          goalsText: '',
          taskComplexity: 'Balanced' as 'Simple' | 'Balanced' | 'Ambitious',
          focusAreas: '',
@@ -79,6 +88,8 @@ function RouteComponent() {
       onSubmit: async ({ value }) => {
          setIsGenerating(true)
          setError(undefined)
+         setIsParsing(true)
+         setHasGenerated(false)
 
          try {
             // Filter out empty commitments
@@ -93,12 +104,17 @@ function RouteComponent() {
 
             const result = await generatePlanServerFn({ data: filteredData })
 
-            // The result should now be a MonthlyPlan object directly
-            setHasGenerated(true)
-            setGeneratedPlan(result)
+            // Simulate parsing progress for better UX
+            setTimeout(() => {
+               setIsParsing(false)
+               setHasGenerated(true)
+               setGenerateResponse(result)
+            }, 2000)
+
          } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to generate plan'
             setError(errorMessage)
+            setIsParsing(false)
             console.error('Plan generation error:', err)
          } finally {
             setIsGenerating(false)
@@ -110,24 +126,29 @@ function RouteComponent() {
 
    const handleRegenerate = () => {
       setHasGenerated(false)
-      setGeneratedPlan(undefined)
+      setGenerateResponse(undefined)
+      setEditedPlan(undefined)
+      setIsEditing(false)
       setError(undefined)
       form.handleSubmit()
    }
 
    const handleSave = async () => {
-      if (!generatedPlan) return
+      if (!generateResponse) return
 
       try {
-         // Call the save endpoint
-         const response = await fetch(`${window.location.origin}/api/plan/save`, {
+         // Call the save parsed plan endpoint
+         const response = await fetch(`${window.location.origin}/api/plan/save-parsed`, {
             method: 'POST',
             headers: {
                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-               planId: generatedPlan.id
-            })
+body: JSON.stringify({
+                preferenceId: generateResponse.preferenceId,
+                monthYear: generateResponse.monthYear,
+                aiResponse: generateResponse.aiResponse,
+                monthlyPlan: editedPlan || generateResponse.monthlyPlan
+             })
          })
 
          if (response.ok) {
@@ -142,15 +163,30 @@ function RouteComponent() {
       }
    }
 
+   const handleEdit = () => {
+      setIsEditing(true)
+      setEditedPlan(generateResponse?.monthlyPlan)
+   }
+
+   const handleSaveEdit = (editedPlanData: MonthlyPlan) => {
+      setEditedPlan(editedPlanData)
+      setIsEditing(false)
+   }
+
+   const handleCancelEdit = () => {
+      setIsEditing(false)
+      setEditedPlan(undefined)
+   }
+
    const handleViewFull = () => {
-      if (!generatedPlan?.id) return
+      if (!generateResponse?.monthlyPlan?.id) return
 
       // Navigate to plan details or open modal
-      console.log('Viewing full plan:', generatedPlan.id)
+      console.log('Viewing full plan:', generateResponse.monthlyPlan.id)
       // You could navigate to a detailed view:
-      // window.location.href = `/plans/${generatedPlan.id}`
+      // window.location.href = `/plans/${generateResponse.monthlyPlan.id}`
       // Or open a modal with full details
-      alert(`Full plan view for plan ID: ${generatedPlan.id} - This would navigate to a detailed view`)
+      alert(`Full plan view for plan ID: ${generateResponse.monthlyPlan.id} - This would navigate to a detailed view`)
    }
 
    return (
@@ -501,15 +537,39 @@ function RouteComponent() {
                </Example>
             </div>
 
-            {/* AI Response Section - Right side on desktop, below form on mobile */}
-            {hasGenerated && (
-               <div className="lg-100 lg:sticky lg:top-8 lg:h-fit">
-                  <AIPlanResponse
-                     isLoading={isGenerating}
+            {/* Parsing Status Section - Shows during parsing */}
+            {isParsing && (
+               <div className="lg:100 lg:sticky lg:top-8 lg:h-fit">
+                  <ParsingStatus
+                     isLoading={isParsing}
+                     aiResponse={null}
                      error={error}
-                     plan={generatedPlan}
+                  />
+               </div>
+            )}
+
+            {/* Edit Mode */}
+            {isEditing && editedPlan && (
+               <div className="lg:100 lg:sticky lg:top-8 lg:h-fit">
+                  <PlanEditor
+                     monthlyPlan={editedPlan}
+                     onSave={handleSaveEdit}
+                     onCancel={handleCancelEdit}
+                  />
+               </div>
+            )}
+
+            {/* Direct Plan Display - Shows after parsing is complete */}
+            {hasGenerated && !isEditing && generateResponse && (
+               <div className="lg:100 lg:sticky lg:top-8 lg:h-fit">
+                  <DirectPlanDisplay
+                     isLoading={isParsing}
+                     aiResponse={generateResponse.aiResponse}
+                     monthlyPlan={editedPlan || generateResponse.monthlyPlan}
+                     error={error}
                      onRegenerate={handleRegenerate}
                      onSave={handleSave}
+                     onEdit={handleEdit}
                      onViewFull={handleViewFull}
                   />
                </div>
