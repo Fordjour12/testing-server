@@ -1,286 +1,191 @@
-
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Calendar, CheckCircle, Clock, ChevronRight, Plus, Target, TrendingUp, Users } from 'lucide-react'
+import { motion } from 'motion/react'
+import { ArrowRight, Brain, Sparkles, Zap, Shield, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/')({
-  component: RouteComponent,
+   component: RouteComponent,
 })
 
 function RouteComponent() {
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Monthly Plan</h1>
-              <p className="text-muted-foreground mt-1">December 2024 • Track your progress and achieve your goals</p>
+   return (
+      <div className="min-h-screen bg-background relative overflow-hidden">
+         {/* Background Elements */}
+         <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-y-1/2" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl translate-y-1/2" />
+         </div>
+
+         {/* Navigation / Header */}
+         <header className="container mx-auto px-4 py-6 relative z-10 flex items-center justify-between">
+            <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
+               <div className="w-8 h-8 bg-primary text-primary-foreground rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
+                  <Brain className="w-5 h-5" />
+               </div>
+               <span>PlanFlow</span>
             </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/calendar">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  View Calendar
-                </Link>
-              </Button>
-              <Button size="sm">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Task
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">24</div>
-              <p className="text-xs text-muted-foreground">+2 from last month</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">18</div>
-              <p className="text-xs text-muted-foreground">75% completion rate</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">4</div>
-              <p className="text-xs text-muted-foreground">2 high priority</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">8</div>
-              <p className="text-xs text-muted-foreground">3 departments</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Plan Section */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Current Focus */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Current Focus</CardTitle>
-                    <CardDescription>This week's priorities</CardDescription>
-                  </div>
-                  <Badge variant="secondary">Active</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-8 bg-primary rounded-full"></div>
-                    <div>
-                      <h4 className="font-medium">Launch Q4 Marketing Campaign</h4>
-                      <p className="text-sm text-muted-foreground">Complete campaign materials and schedule</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-8 bg-yellow-500 rounded-full"></div>
-                    <div>
-                      <h4 className="font-medium">User Research Analysis</h4>
-                      <p className="text-sm text-muted-foreground">Analyze feedback from 50+ user interviews</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-8 bg-green-500 rounded-full"></div>
-                    <div>
-                      <h4 className="font-medium">API Documentation Update</h4>
-                      <p className="text-sm text-muted-foreground">Complete v2.0 documentation for developers</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Upcoming Tasks */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Upcoming Tasks</CardTitle>
-                    <CardDescription>Next 2 weeks</CardDescription>
-                  </div>
-                  <Button variant="ghost" size="sm">
-                    View All
-                    <ChevronRight className="ml-1 h-4 w-4" />
+            <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+               <Link to="/" className="hover:text-primary transition-colors">Features</Link>
+               <Link to="/" className="hover:text-primary transition-colors">Pricing</Link>
+               <Link to="/" className="hover:text-primary transition-colors">About</Link>
+            </nav>
+            <div className="flex items-center gap-4">
+               <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">
+                  Sign In
+               </Link>
+               <Link to="/generate">
+                  <Button size="sm" className="shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
+                     Get Started
                   </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                      <TrendingUp className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Revenue Analytics Dashboard</p>
-                      <p className="text-xs text-muted-foreground">Due Dec 20 • High Priority</p>
-                    </div>
+               </Link>
+            </div>
+         </header>
+
+         <main className="container mx-auto px-4 pt-12 pb-24 md:pt-24 md:pb-32 relative z-10">
+            {/* Hero Section */}
+            <div className="max-w-4xl mx-auto text-center space-y-8 mb-24 md:mb-32">
+               <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+               >
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary text-secondary-foreground border border-border text-sm mb-6 backdrop-blur-sm shadow-sm">
+                     <Sparkles className="w-3.5 h-3.5 text-primary" />
+                     <span className="font-medium">New: Hybrid Architecture with Auto-Save</span>
                   </div>
-                  <Badge variant="outline">Analytics</Badge>
-                </div>
+                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-br from-foreground to-foreground/60 pb-2">
+                     Plan your life at the <br />
+                     <span className="text-primary">speed of thought.</span>
+                  </h1>
+               </motion.div>
 
-                <Separator />
+               <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+               >
+                  Generate comprehensive monthly plans in seconds.
+                  Our new hybrid engine ensures your ideas are captured instantly and never lost.
+               </motion.p>
 
-                <div className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                      <Users className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Team Performance Review</p>
-                      <p className="text-xs text-muted-foreground">Due Dec 22 • Medium Priority</p>
-                    </div>
+               <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+               >
+                  <Link to="/generate">
+                     <Button size="lg" className="h-12 px-8 text-base shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all hover:-translate-y-1">
+                        Start Planning Now
+                        <ArrowRight className="ml-2 w-4 h-4" />
+                     </Button>
+                  </Link>
+                  <Button
+                     size="lg"
+                     variant="outline"
+                     className="h-12 px-8 text-base bg-background/50 backdrop-blur-sm hover:bg-muted transition-colors"
+                     onClick={() => {
+                        document.getElementById('demo-section')?.scrollIntoView({ behavior: 'smooth' })
+                        const video = document.getElementById('demo-video') as HTMLVideoElement
+                        if (video) video.play()
+                     }}
+                  >
+                     View Demo
+                  </Button>
+               </motion.div>
+            </div>
+
+            {/* Demo Video Section */}
+            <motion.div
+               id="demo-section"
+               initial={{ opacity: 0, scale: 0.95 }}
+               whileInView={{ opacity: 1, scale: 1 }}
+               viewport={{ once: true }}
+               transition={{ duration: 0.7 }}
+               className="max-w-5xl mx-auto mb-32"
+            >
+               <div className={cn(
+                  "relative rounded-xl overflow-hidden shadow-2xl border border-border/50 bg-card/50 backdrop-blur-xl aspect-video group",
+                  "after:absolute after:inset-0 after:bg-linear-to-t after:from-background/20 after:to-transparent after:pointer-events-none"
+               )}>
+                  <div className="absolute inset-0 grid place-items-center bg-muted/20">
+                     {/* Placeholder / Mock Video */}
+                     <div className="text-center space-y-4">
+                        <div className="w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center mx-auto backdrop-blur-sm animate-pulse">
+                           <Zap className="w-8 h-8 fill-current" />
+                        </div>
+                        <p className="text-muted-foreground font-medium">Application Demo Preview</p>
+                     </div>
+
+                     {/* Actual Video Element (Commented out until asset is available) */}
+                     {/* 
+                     <video 
+                        id="demo-video"
+                        className="w-full h-full object-cover"
+                        controls
+                        poster="/demo-poster.png"
+                     >
+                        <source src="/demo-reel.mp4" type="video/mp4" />
+                        Your browser does not support the video tag.
+                     </video> 
+                     */}
                   </div>
-                  <Badge variant="outline">HR</Badge>
-                </div>
 
-                <Separator />
-
-                <div className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                      <Target className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Q1 Goal Setting Workshop</p>
-                      <p className="text-xs text-muted-foreground">Due Dec 28 • High Priority</p>
-                    </div>
+                  {/* Decorative UI Overlay */}
+                  <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
+                     <div className="flex gap-1.5">
+                        <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                        <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                        <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                     </div>
+                     <div className="px-3 py-1 rounded-full bg-black/10 backdrop-blur-md text-xs font-medium text-foreground/50 border border-white/10">
+                        PlanFlow v2.0
+                     </div>
                   </div>
-                  <Badge variant="outline">Planning</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+               </div>
+            </motion.div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Progress Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Progress Overview</CardTitle>
-                <CardDescription>Monthly completion rate</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-primary">75%</div>
-                    <p className="text-sm text-muted-foreground">18 of 24 tasks completed</p>
-                  </div>
+            {/* Feature Grid */}
+            <motion.div
+               initial={{ opacity: 0, y: 40 }}
+               whileInView={{ opacity: 1, y: 0 }}
+               viewport={{ once: true }}
+               transition={{ duration: 0.7 }}
+               className="grid md:grid-cols-3 gap-8"
+            >
+               <FeatureCard
+                  icon={<Zap className="w-6 h-6 text-primary" />}
+                  title="Instant Generation"
+                  description="Powered by advanced AI models to create detailed, actionable plans tailored to your life goals."
+               />
+               <FeatureCard
+                  icon={<Shield className="w-6 h-6 text-primary" />}
+                  title="Draft Recovery"
+                  description="Never lose your progress. Our hybrid architecture auto-stages your work so you can resume exactly where you left off."
+               />
+               <FeatureCard
+                  icon={<Clock className="w-6 h-6 text-primary" />}
+                  title="Smart Scheduling"
+                  description="Optimize your time with intelligent task distribution that respects your weekends and energy levels."
+               />
+            </motion.div>
+         </main>
+      </div>
+   )
+}
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Weekly Goal</span>
-                      <span>6/8 tasks</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div className="bg-primary h-2 rounded-full" style={{ width: '75%' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Task
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Schedule Review
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <TrendingUp className="mr-2 h-4 w-4" />
-                  View Reports
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Last 24 hours</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
-                  <div className="text-sm">
-                    <p>Completed "Database Migration"</p>
-                    <p className="text-xs text-muted-foreground">2 hours ago</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Clock className="h-4 w-4 text-yellow-500 mt-0.5" />
-                  <div className="text-sm">
-                    <p>Started "UI Component Library"</p>
-                    <p className="text-xs text-muted-foreground">5 hours ago</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Plus className="h-4 w-4 text-blue-500 mt-0.5" />
-                  <div className="text-sm">
-                    <p>Added "Security Audit" task</p>
-                    <p className="text-xs text-muted-foreground">1 day ago</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
-    </div>
-  )
+function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+   return (
+      <div className="group p-6 rounded-2xl border bg-card/50 backdrop-blur-sm hover:bg-card hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
+         <div className="w-12 h-12 rounded-xl bg-background border flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-primary/5 transition-all duration-300 shadow-sm group-hover:border-primary/20">
+            {icon}
+         </div>
+         <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">{title}</h3>
+         <p className="text-muted-foreground leading-relaxed group-hover:text-foreground/80 transition-colors">
+            {description}
+         </p>
+      </div>
+   )
 }

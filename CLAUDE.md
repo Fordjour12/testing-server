@@ -4,128 +4,148 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a TypeScript monorepo built with Better-T-Stack, using Hono as the web framework, Bun as the runtime, Drizzle ORM with PostgreSQL, and Better-Auth for authentication. The project uses Turborepo for monorepo management. It features AI-powered monthly plan generation using OpenRouter SDK with graceful fallback to mock data.
+AI-powered monthly planning application built as a TypeScript monorepo using Bun runtime and Turborepo. Users submit planning preferences, and the system generates structured monthly plans using OpenRouter API with Claude models.
 
-## Architecture
+## Common Commands
 
-The project follows a modular monorepo structure:
-
-- **apps/server** - Main Hono application server
-  - Contains public API routes (`/api/plan/*`) and internal services (`/service/*`)
-  - Houses OpenRouter service module (`src/lib/openrouter.ts`)
-  - Server runs on port 3000 by default
-- **packages/db** - Database layer with Drizzle ORM schema, migrations, and queries
-  - All database operations centralized in query functions in `src/queries/`
-  - AI generation preparation and plan saving logic in `src/queries/plan-generation.ts`
-  - User productivity insights analysis in `src/queries/insights-analysis.ts`
-- **packages/auth** - Authentication configuration using Better-Auth
-- **packages/config** - Shared TypeScript configuration
-
-### Key Architecture Patterns
-
-1. **Separation of Concerns**: Public API endpoints (`apps/server/src/router/plan.ts`) are separate from internal services (`apps/server/src/router/services.ts`)
-2. **Database Abstraction**: All database operations go through query functions in `packages/db/src/queries/`
-3. **AI Integration at Service Layer**: OpenRouter SDK integration is implemented in the internal service layer (`apps/server/src/router/services.ts`), with database queries handling preparation and saving
-4. **Quota Management**: Built-in generation quota system per user per month with automatic enforcement
-5. **Graceful Degradation**: AI calls fall back to mock data when API is unavailable, ensuring system works even without OpenRouter API key
-
-## Common Development Commands
-
-### Development
 ```bash
-bun run dev              # Start all applications in development mode
-bun run dev:server       # Start only the server application
-```
+# Development
+bun run dev              # Start both server (3000) and web app (5173)
+bun run dev:server       # Start server only
+bun run dev:web          # Start web app only
 
-### Building and Type Checking
-```bash
+# Building
 bun run build           # Build all applications
-bun run check-types     # Run TypeScript type checking across all apps
-```
+bun run build:web       # Build web app only
+bun run check-types     # Type check across all packages
+bun run preview:web     # Preview built web app
 
-### Database Operations
-```bash
+# Testing & Linting
+bun run test:web        # Run web app tests
+bun run lint:web        # Lint web app code
+bun run format:web      # Format web app code
+
+# Database Operations
 bun run db:push         # Push schema changes to database
-bun run db:studio       # Open Drizzle Studio for database management
+bun run db:studio       # Open Drizzle Studio (database GUI)
 bun run db:generate     # Generate migration files
 bun run db:migrate      # Run database migrations
-bun run db:start        # Start PostgreSQL container via Docker Compose
+bun run db:start        # Start PostgreSQL via Docker Compose
 bun run db:watch        # Start PostgreSQL with watch mode
 bun run db:stop         # Stop PostgreSQL container
 bun run db:down         # Stop and remove PostgreSQL container
 ```
 
-## Key Technologies
+## Architecture
 
-- **Runtime**: Bun v1.3.0
-- **Framework**: Hono v4.8.2
-- **Database**: PostgreSQL with Drizzle ORM v0.45.1
-- **Authentication**: Better-Auth v1.4.5 with email/password support
-- **AI Integration**: OpenRouter SDK v0.2.11 for LLM access
-- **Monorepo**: Turborepo v2.5.4
-- **Language**: TypeScript v5 with strict configuration
+### Monorepo Structure
+
+```
+apps/
+  server/          # Hono backend API (port 3000)
+  web/             # React 19 + Vite frontend (port 5173)
+packages/
+  api/             # Shared API utilities, routers, and OpenRouter service
+  auth/            # Better-Auth configuration
+  config/          # TypeScript configs
+  db/              # Drizzle ORM schema and queries
+  types/           # Shared TypeScript types
+  response-parser/ # AI response parsing utilities
+```
+
+### Backend (apps/server/)
+
+**Entry point:** `apps/server/src/index.ts`
+
+**Router organization:**
+- `/api/plan/*` - Plan generation endpoints (from `packages/api/src/routers/plan.ts`)
+- `/service/*` - Internal services including OpenRouter generation (`packages/api/src/routers/services.ts`)
+- `/api/streaming/*` - Streaming response support
+- `/api/mock/*` - Mock data for development
+- `/api/quota/*` - User generation quota management
+- `/api/auth/*` - Better-Auth handler
+
+**Authentication flow:**
+- Better-Auth with Drizzle adapter for PostgreSQL
+- Context created via `createContext` in `apps/server/src/lib/context.ts`
+- Session attached to Hono context variables for all routes
+
+### API Package (packages/api/)
+
+Core shared logic between server and potentially other consumers:
+
+- `lib/openrouter.ts` - OpenRouter SDK wrapper service
+- `lib/response-extractor.ts` - Extracts structured data from AI responses
+- `services/plan-generation.ts` - Legacy plan generation service
+- `services/hybrid-plan-generation.ts` - Current hybrid approach (AI + fallback)
+- `routers/plan.ts` - Plan-related API routes
+- `routers/services.ts` - Service endpoints including `/service/generate`
+
+### Database (packages/db/)
+
+**Schema files:**
+- `auth.ts` - Better-Auth tables (user, session, account)
+- `monthly-plans.ts` - Generated plans
+- `plan-tasks.ts` - Individual tasks within plans
+- `user-goals-and-preferences.ts` - User settings for plan generation
+- `user-productivity-insights.ts` - User analytics and patterns
+- `generation-quota.ts` - Monthly generation limits per user
+- `plan-drafts.ts` - Draft plans before confirmation
+- `ai-request-logs.ts` - AI request logging for debugging
+
+**Connection:** Database instance exported from `packages/db/src/index.ts`
+
+### Frontend (apps/web/)
+
+React 19 with TanStack Router, Shadcn UI components, and Tailwind CSS v4.
+
+## AI Integration Flow
+
+1. User submits preferences via `POST /api/plan/inputs`
+2. System checks/decrements user's monthly quota (`generation_quota` table)
+3. Prompt constructed from user goals, preferences, and historical insights
+4. Call to `/service/generate` which uses OpenRouter SDK
+5. If OpenRouter unavailable (no API key or failure), falls back to mock data
+6. AI response parsed using `response-extractor.ts`
+7. Structured plan stored in `monthly_plans` and `plan_tasks` tables
+8. Plan ID returned to client
 
 ## Environment Configuration
 
-- Server environment file: `apps/server/.env`
-- Example environment file: `apps/server/.env.example`
-- Database configuration via Docker Compose: `packages/db/docker-compose.yml`
+**Server env file:** `apps/server/.env`
 
-### Required Environment Variables
+Required:
 ```env
-DATABASE_URL=           # PostgreSQL connection string
-BETTER_AUTH_SECRET=     # Auth signing secret
-BETTER_AUTH_URL=        # Base URL for auth
-CORS_ORIGIN=           # CORS allowed origins
+DATABASE_URL=              # PostgreSQL connection
+BETTER_AUTH_SECRET=        # Auth signing secret
+BETTER_AUTH_URL=           # Base URL for auth
+CORS_ORIGIN=              # Allowed origins (default: http://localhost:5173)
 ```
 
-### OpenRouter Environment Variables (Optional)
+Optional (for AI features):
 ```env
-OPENROUTER_API_KEY=your_api_key_here
+OPENROUTER_API_KEY=       # OpenRouter API key
 OPENROUTER_MODEL=anthropic/claude-3.5-sonnet
 OPENROUTER_TEMPERATURE=0.7
 OPENROUTER_MAX_TOKENS=4000
 ```
 
-## Database Schema
+Without OpenRouter credentials, the system uses mock data for development.
 
-- Authentication schema is located in `packages/db/src/schema/auth.ts`
-- Database connection and instance are exported from `packages/db/src/index.ts`
-- AI-related tables: `monthly_plans`, `plan_tasks`, `user_goals_and_preferences`, `user_productivity_insights`, `generation_quota`
+## Frontend Development Guidelines
 
-## Authentication Setup
+The `.agent/rules/web-agent.md` file defines frontend development standards:
 
-- Better-Auth configuration in `packages/auth/src/index.ts`
-- Uses Drizzle adapter for PostgreSQL
-- Email/password authentication enabled
-- CORS-aware cookie configuration for cross-origin requests
+- **Library Discipline:** Must use existing UI libraries (Shadcn UI, Radix UI) rather than building custom components
+- **Design Philosophy:** "Intentional Minimalism" - avoid generic templates, strive for bespoke layouts
+- When user triggers "ULTRATHINK", engage in deep multi-dimensional analysis (psychological, technical, accessibility, scalability)
 
-## AI Plan Generation Architecture
+## Key Technologies
 
-The AI-powered plan generation follows this flow:
-
-1. User submits planning preferences via `POST /api/plan/inputs`
-2. System checks and decrements user's monthly generation quota
-3. Comprehensive prompt is constructed with user goals, preferences, and historical insights
-4. Internal service `/service/generate` is called, which handles AI generation
-5. OpenRouter API is called if configured, otherwise falls back to mock data
-6. AI response is parsed, stored, and tasks are extracted into the database
-7. Returns generated plan ID to the user
-
-### Key Files for AI Integration
-
-- `apps/server/src/router/services.ts` - Internal service that calls OpenRouter or mock data
-- `apps/server/src/lib/openrouter.ts` - OpenRouter service implementation
-- `packages/db/src/queries/plan-generation.ts` - Plan preparation and saving logic
-- `packages/db/src/queries/insights-analysis.ts` - Productivity insights calculation
-- Mock data fallback ensures system works even without API key
-
-## Development Notes
-
-- All packages use workspace references for internal dependencies
-- TypeScript configuration is centralized in `packages/config/tsconfig.base.json`
-- The server runs on port 3000 by default
-- CORS origin is configurable via `CORS_ORIGIN` environment variable
-- OpenRouter integration includes automatic fallback to mock data for development
-- Database queries are the single source of truth for all data operations
-- First-time users are handled gracefully with empty insights arrays and appropriate AI prompts
+- **Runtime:** Bun 1.3.0
+- **Monorepo:** Turborepo 2.5.4
+- **Backend:** Hono 4.8.2
+- **Database:** PostgreSQL + Drizzle ORM 0.45.1
+- **Auth:** Better-Auth 1.4.5
+- **AI:** OpenRouter SDK 0.2.11
+- **Frontend:** React 19, Vite 7, TanStack Router, Tailwind CSS v4, Shadcn UI
