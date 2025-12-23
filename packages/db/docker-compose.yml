@@ -2,7 +2,7 @@ name: testing-server
 
 services:
   postgres:
-    image: postgres
+    image: postgres:17
     container_name: testing-server-postgres
     environment:
       POSTGRES_DB: testing-server-1
