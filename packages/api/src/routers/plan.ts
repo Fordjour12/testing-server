@@ -1,14 +1,37 @@
+/**
+ * Plan Router - Hybrid Approach (Simplified + Existing Endpoints)
+ * 
+ * This combines the new simplified hybrid flow with existing endpoints:
+ * 
+ * NEW SIMPLIFIED ENDPOINTS:
+ * - POST /api/plan/generate - Generate and auto-stage a plan
+ * - POST /api/plan/confirm - Save a draft to permanent storage
+ * - GET /api/plan/draft/:key - Get a specific draft
+ * - GET /api/plan/draft - Get user's latest draft (for auto-recovery)
+ * - DELETE /api/plan/draft/:key - Discard a draft
+ * 
+ * EXISTING ENDPOINTS (kept for backward compatibility):
+ * - GET /api/plan/current - Get the active monthly plan
+ * - PATCH /api/plan/tasks/:taskId - Update task status
+ * - GET /api/plan/inputs/latest - Get latest planning inputs
+ */
+
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import {
-   createGoalPreference,
    getLatestGoalPreference,
    getCurrentMonthlyPlanWithTasks,
    updateTaskStatus as updateTaskStatusQuery,
    logActivity as logActivityQuery,
-   saveGeneratedPlan
+   getDraft,
+   deleteDraft,
+   getLatestDraft
 } from '@testing-server/db';
+import {
+   generatePlan,
+   confirmPlan
+} from '../services/hybrid-plan-generation';
 
 // Type for session context
 type Variables = {
@@ -24,227 +47,269 @@ type Variables = {
 
 export const planRouter = new Hono<{ Variables: Variables }>();
 
-// Zod schemas for validation
-const createPlanInputSchema = z.object({
-   goalsText: z.string().min(1),
-   taskComplexity: z.enum(['Simple', 'Balanced', 'Ambitious']),
-   focusAreas: z.string().min(1),
-   weekendPreference: z.enum(['Work', 'Rest', 'Mixed']),
+// ============================================
+// VALIDATION SCHEMAS
+// ============================================
+
+const generateInputSchema = z.object({
+   userId: z.string().optional(), // Optional because we'll get it from session
+   goalsText: z.string().min(1, "Goals are required"),
+   taskComplexity: z.enum(["Simple", "Balanced", "Ambitious"]),
+   focusAreas: z.string().min(1, "Focus areas are required"),
+   weekendPreference: z.enum(["Work", "Rest", "Mixed"]),
    fixedCommitmentsJson: z.object({
-      commitments: z.array(z.object({
-         dayOfWeek: z.string(),
-         startTime: z.string(),
-         endTime: z.string(),
-         description: z.string()
-      }))
-   })
+      commitments: z.array(
+         z.object({
+            dayOfWeek: z.string(),
+            startTime: z.string(),
+            endTime: z.string(),
+            description: z.string(),
+         })
+      ),
+   }),
+});
+
+const confirmInputSchema = z.object({
+   draftKey: z.string().min(1, "Draft key is required")
 });
 
 const updateTaskSchema = z.object({
    isCompleted: z.boolean()
 });
 
-planRouter.get('/', async (c) => {
-   return c.json({
-      message: "Okay! from /api/plan"
-   })
-})
+// ============================================
+// NEW SIMPLIFIED HYBRID ENDPOINTS
+// ============================================
 
-// POST /api/plan/inputs - Save planning inputs and trigger AI generation
-planRouter.post('/inputs', zValidator('json', createPlanInputSchema), async (c) => {
-   try {
-      const data = c.req.valid('json');
-      const session = c.get('session');
-      let userId: string;
+/**
+ * POST /api/plan/generate
+ * Generate a new plan and auto-stage it
+ */
+planRouter.post(
+   "/generate",
+   zValidator("json", generateInputSchema),
+   async (c) => {
+      try {
+         const data = c.req.valid("json");
 
-      // Try to get userId from session context first (normal browser requests)
-      if (session?.user?.id) {
-         userId = session.user.id;
-         console.log("Using userId from session context:", userId);
-      } else {
-         // Try to get userId from Authorization header (for server-to-server calls)
-         const authHeader = c.req.header('Authorization');
-         if (authHeader && authHeader.startsWith('Bearer ')) {
-            const token = authHeader.slice(7);
-            console.log("Found Authorization header with token:", token.substring(0, 10) + "...");
-            
-            // For server-to-server calls from our own server function,
-            // we'll temporarily extract user ID from a custom header
-            const userIdHeader = c.req.header('X-User-ID');
-            if (userIdHeader) {
-               userId = userIdHeader;
-               console.log("Using userId from X-User-ID header:", userId);
-            } else {
-               return c.json({
-                  success: false,
-                  error: 'User ID required for server-to-server calls'
-               }, 400);
-            }
-         } else {
-            console.error('Authentication failed - no session or Authorization header found:', { session: !!session, hasAuthHeader: !!authHeader });
+         // Get userId from session or use the one from request
+         const userId = c.get("session")?.user?.id || data.userId;
+
+         if (!userId) {
             return c.json({
                success: false,
-               error: 'Authentication required'
+               error: "Authentication required"
             }, 401);
          }
-      }
 
-      console.log("data user sent to server data", { ...data, userId })
+         console.log(`[API] Plan generation request from user: ${userId}`);
 
-      // 1. Insert into userGoalsAndPreferences table
-      const newPreference = await createGoalPreference({
-         userId,
-         goalsText: data.goalsText,
-         taskComplexity: data.taskComplexity,
-         focusAreas: data.focusAreas,
-         weekendPreference: data.weekendPreference,
-         fixedCommitmentsJson: data.fixedCommitmentsJson
-      });
+         const result = await generatePlan({ ...data, userId });
 
-      if (!newPreference) {
-         return c.json({
-            success: false,
-            error: 'Failed to save planning inputs'
-         }, 500);
-      }
+         if (!result.success) {
+            return c.json({
+               success: false,
+               error: result.error
+            }, 500);
+         }
 
-      // 2. Trigger AI Plan Generation via internal service call
-      // This is proper architecture: public API → internal service
-      try {
-         // Make internal HTTP call to /service/generate
-         const baseUrl = process.env.API_BASE_URL;
-         const response = await fetch(`${baseUrl}/service/generate`, {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-               preferenceId: newPreference.id,
-               userId
-            })
-         });
-
-const result = await response.json() as { success?: boolean; error?: string; planId?: number; data?: any };
-          console.log("result", result)
-
-          if (!response.ok || !result.success) {
-             throw new Error(result.error || 'Failed to generate plan');
-          }
-
-          // 3. Return success response with full AI response data
-          return c.json({
-             success: true,
-             preferenceId: newPreference.id,
-             planId: result.planId,
-             data: result.data, // Include the actual AI response data
-             message: 'Planning inputs saved and plan generated successfully'
-          });
-      } catch (generationError) {
-         console.error('Error during plan generation:', generationError);
-         // Still return success for saving preferences, but note generation failed
          return c.json({
             success: true,
-            preferenceId: newPreference.id,
-            warning: 'Planning inputs saved but AI generation failed',
-            error: generationError instanceof Error ? generationError.message : 'Unknown generation error'
+            data: {
+               draftKey: result.draftKey,
+               planData: result.planData,
+               preferenceId: result.preferenceId,
+               generatedAt: result.generatedAt,
+            },
+            message: "Plan generated successfully. Review and save when ready.",
          });
-      }
-
-   } catch (error) {
-      console.error('Error saving plan inputs:', error);
-      return c.json({
-         success: false,
-         error: 'Failed to save planning inputs'
-      }, 500);
-   }
-});
-
-// POST /api/plan/save - Server function for saving plans
-planRouter.post('/save', zValidator('json', z.object({
-   planId: z.string()
-})), async (c) => {
-   try {
-      const { planId } = c.req.valid('json');
-
-      // In a real implementation, you might update a "saved" flag or perform additional save operations
-      // For now, we'll just log save action since plans are already saved in the database
-      console.log(`Plan ${planId} save action completed via server function`);
-
-      return c.json({
-         success: true,
-         message: 'Plan saved successfully!'
-      });
-
-   } catch (error) {
-      console.error('Error saving plan via server function:', error);
-      return c.json({
-         success: false,
-         error: error instanceof Error ? error.message : 'Failed to save plan'
-      }, 500);
-   }
-});
-
-// POST /api/plan/save-parsed - Save parsed AI response to database (Approach 1: Direct Response)
-const saveParsedPlanSchema = z.object({
-   preferenceId: z.number(),
-   monthYear: z.string(),
-   aiResponse: z.any(), // AIResponseWithMetadata
-   monthlyPlan: z.any() // MonthlyPlan
-});
-
-planRouter.post('/save-parsed', zValidator('json', saveParsedPlanSchema), async (c) => {
-   try {
-      const session = c.get('session');
-
-      if (!session?.user?.id) {
-         console.error('Authentication failed - no user session found:', session);
+      } catch (error) {
+         console.error("[API] Plan generation error:", error);
          return c.json({
             success: false,
-            error: 'Authentication required'
+            error: error instanceof Error ? error.message : "Unknown error occurred"
+         }, 500);
+      }
+   }
+);
+
+/**
+ * POST /api/plan/confirm
+ * Save a drafted plan permanently
+ */
+planRouter.post(
+   "/confirm",
+   zValidator("json", confirmInputSchema),
+   async (c) => {
+      try {
+         const { draftKey } = c.req.valid("json");
+         const userId = c.get("session")?.user?.id;
+
+         if (!userId) {
+            return c.json({
+               success: false,
+               error: "Authentication required"
+            }, 401);
+         }
+
+         console.log(`[API] Plan confirm request from user: ${userId}, draft: ${draftKey}`);
+
+         const result = await confirmPlan(userId, draftKey);
+
+         if (!result.success) {
+            return c.json({
+               success: false,
+               error: result.error
+            }, 400);
+         }
+
+         return c.json({
+            success: true,
+            data: { planId: result.planId },
+            message: "Plan saved successfully!",
+         });
+      } catch (error) {
+         console.error("[API] Plan confirm error:", error);
+         return c.json({
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error occurred"
+         }, 500);
+      }
+   }
+);
+
+/**
+ * GET /api/plan/draft/:key
+ * Retrieve a specific draft (for page refresh recovery)
+ */
+planRouter.get("/draft/:key", async (c) => {
+   try {
+      const draftKey = c.req.param("key");
+      const userId = c.get("session")?.user?.id;
+
+      if (!userId) {
+         return c.json({
+            success: false,
+            error: "Authentication required"
          }, 401);
       }
 
-      const userId = session.user.id;
-      const { preferenceId, monthYear, aiResponse } = c.req.valid('json');
+      console.log(`[API] Get draft request from user: ${userId}, key: ${draftKey}`);
 
-      // Convert MonthlyPlan back to AI response format for database storage
-      const aiResponseForDB = {
-         rawContent: aiResponse.rawContent,
-         metadata: aiResponse.metadata
-      };
+      const draft = await getDraft(userId, draftKey);
 
-      // Save the generated plan to the database using existing logic
-      const planId = await saveGeneratedPlan(
-         userId,
-         preferenceId,
-         monthYear,
-         '', // prompt - we don't have it in this flow, could be passed if needed
-         aiResponseForDB
-      );
-
-      if (!planId) {
+      if (!draft) {
          return c.json({
             success: false,
-            error: 'Failed to save plan to database'
-         }, 500);
+            error: "Draft not found or expired"
+         }, 404);
       }
 
       return c.json({
          success: true,
-         planId,
-         message: 'Parsed plan saved successfully to database'
+         data: {
+            planData: draft.planData,
+            draftKey: draft.draftKey,
+            createdAt: draft.createdAt,
+            expiresAt: draft.expiresAt,
+         },
       });
-
    } catch (error) {
-      console.error('Error saving parsed plan:', error);
+      console.error("[API] Get draft error:", error);
       return c.json({
          success: false,
-         error: error instanceof Error ? error.message : 'Failed to save parsed plan'
+         error: error instanceof Error ? error.message : "Unknown error occurred"
       }, 500);
    }
 });
 
-// GET /api/plan/inputs/latest - Get latest planning inputs for a user
+/**
+ * GET /api/plan/draft
+ * Get latest draft for current user (auto-recovery)
+ */
+planRouter.get("/draft", async (c) => {
+   try {
+      const userId = c.get("session")?.user?.id;
+
+      if (!userId) {
+         return c.json({
+            success: false,
+            error: "Authentication required"
+         }, 401);
+      }
+
+      console.log(`[API] Get latest draft request from user: ${userId}`);
+
+      const draft = await getLatestDraft(userId);
+
+      if (!draft) {
+         // No draft is OK - just return null
+         return c.json({
+            success: true,
+            data: null,
+            message: "No draft found"
+         });
+      }
+
+      return c.json({
+         success: true,
+         data: {
+            planData: draft.planData,
+            draftKey: draft.draftKey,
+            createdAt: draft.createdAt,
+            expiresAt: draft.expiresAt,
+         },
+      });
+   } catch (error) {
+      console.error("[API] Get latest draft error:", error);
+      return c.json({
+         success: false,
+         error: error instanceof Error ? error.message : "Unknown error occurred"
+      }, 500);
+   }
+});
+
+/**
+ * DELETE /api/plan/draft/:key
+ * Discard a draft
+ */
+planRouter.delete("/draft/:key", async (c) => {
+   try {
+      const draftKey = c.req.param("key");
+      const userId = c.get("session")?.user?.id;
+
+      if (!userId) {
+         return c.json({
+            success: false,
+            error: "Authentication required"
+         }, 401);
+      }
+
+      console.log(`[API] Delete draft request from user: ${userId}, key: ${draftKey}`);
+
+      await deleteDraft(userId, draftKey);
+
+      return c.json({
+         success: true,
+         message: "Draft discarded successfully",
+      });
+   } catch (error) {
+      console.error("[API] Delete draft error:", error);
+      return c.json({
+         success: false,
+         error: error instanceof Error ? error.message : "Unknown error occurred"
+      }, 500);
+   }
+});
+
+// ============================================
+// EXISTING ENDPOINTS (Backward Compatibility)
+// ============================================
+
+/**
+ * GET /api/plan/inputs/latest
+ * Get latest planning inputs for a user
+ */
 planRouter.get('/inputs/latest', async (c) => {
    try {
       const session = c.get('session');
@@ -271,7 +336,10 @@ planRouter.get('/inputs/latest', async (c) => {
    }
 });
 
-// GET /api/plan/current - Get the active monthly plan
+/**
+ * GET /api/plan/current
+ * Get the active monthly plan
+ */
 planRouter.get('/current', async (c) => {
    try {
       const session = c.get('session');
@@ -301,7 +369,10 @@ planRouter.get('/current', async (c) => {
    }
 });
 
-// PATCH /api/plan/tasks/:taskId - Update task status
+/**
+ * PATCH /api/plan/tasks/:taskId
+ * Update task status
+ */
 planRouter.patch('/tasks/:taskId', zValidator('json', updateTaskSchema), async (c) => {
    try {
       const taskId = parseInt(c.req.param('taskId'));
@@ -332,4 +403,28 @@ planRouter.patch('/tasks/:taskId', zValidator('json', updateTaskSchema), async (
          error: 'Failed to update task status'
       }, 500);
    }
+});
+
+/**
+ * GET /api/plan
+ * Health check endpoint
+ */
+planRouter.get('/', async (c) => {
+   return c.json({
+      message: "Plan API - Hybrid approach active",
+      endpoints: {
+         new: [
+            "POST /api/plan/generate",
+            "POST /api/plan/confirm",
+            "GET /api/plan/draft/:key",
+            "GET /api/plan/draft",
+            "DELETE /api/plan/draft/:key"
+         ],
+         existing: [
+            "GET /api/plan/current",
+            "PATCH /api/plan/tasks/:taskId",
+            "GET /api/plan/inputs/latest"
+         ]
+      }
+   });
 });

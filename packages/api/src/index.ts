@@ -22,6 +22,17 @@ export {
    handleAIServiceFailure
 } from './services/plan-generation';
 
+export {
+   generatePlan,
+   confirmPlan
+} from './services/hybrid-plan-generation';
+
+export type {
+   GeneratePlanInput,
+   GeneratePlanResult,
+   GeneratePlanError
+} from './services/hybrid-plan-generation';
+
 // Export routers
 export { planRouter } from './routers/plan';
 export { servicesRouter } from './routers/services';

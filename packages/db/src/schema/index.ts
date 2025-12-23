@@ -9,6 +9,7 @@ export * from "./user-goals-and-preferences";
 export * from "./generation-quota";
 export * from "./monthly-plans";
 export * from "./plan-tasks";
+export * from "./plan-drafts";
 export * from "./user-activity-history";
 export * from "./user-productivity-insights";
 export * from "./ai-request-logs";

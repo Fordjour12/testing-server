@@ -8,6 +8,13 @@
       "when": 1766142277380,
       "tag": "0000_peaceful_fixer",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766469493579,
+      "tag": "0001_premium_lightspeed",
+      "breakpoints": true
     }
   ]
 }
